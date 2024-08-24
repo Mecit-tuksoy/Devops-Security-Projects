@@ -1,6 +1,8 @@
 # "Creating and Securing Netflix Clone on GCP Using DevOps Tools (SonarQube, OWASP, Trivy, Jenkins, Docker, Prometheus, Grafana)"
 
-# This project aims to create a clone of the popular streaming platform Netflix and securely deploy it using modern DevOps practices. The project includes:
+## This project aims to create a clone of the popular streaming platform Netflix and securely deploy it using modern DevOps practices. 
+
+The project includes:
 
 A Netflix-like user interface developed using React and TypeScript.
 
