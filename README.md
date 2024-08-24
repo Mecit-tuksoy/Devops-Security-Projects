@@ -21,3 +21,14 @@ The project includes:
 - Monitoring application performance and infrastructure with Prometheus and Grafana.
 
 This project aims to create a secure, scalable, and high-performance streaming platform clone by combining modern web development techniques, DevOps practices, and cloud technologies. At the same time, it provides a continuous improvement and security-focused development process using industry-standard tools.
+
+
+Proje aşamaları:
+
+1- Gcloud'da VM instances oluştur (Ubuntu 22.04.4 LTS  ve  20 GB)
+2- İnstance için firewall ayarlarını yap. İhtiyacımız olacak portlar: 8080, 8081, 9000, 9090. 9100
+3- Bu server'a:
+    1- Jenkins kurulumunu yap ve brawserdan erişimi sağla
+    2- Docker kurulumu yap
+    3- SonarQube Konteynerini Oluştur sh``docker run -d --name sonar -p 9000:9000 sonarqube:lts-community`` 
+    4- Trivy Kurulumu yap
