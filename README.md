@@ -84,7 +84,7 @@ This project aims to create a secure, scalable, and high-performance streaming p
     sh````
      sudo nano /etc/systemd/system/prometheus.service
     ````
-    sh````
+sh````
 [Unit]
 Description=Prometheus
 Wants=network-online.target
@@ -110,7 +110,6 @@ ExecStart=/usr/local/bin/prometheus \
 [Install]
 WantedBy=multi-user.target
 ````
-
 
    sh````
 sudo systemctl enable prometheus 
