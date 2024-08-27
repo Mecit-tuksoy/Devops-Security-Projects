@@ -33,7 +33,7 @@ This project aims to create a secure, scalable, and high-performance streaming p
     3- SonarQube Konteynerini Oluştur sh``docker run -d --name sonar -p 9000:9000 sonarqube:lts-community`` 
     4- Trivy Kurulumu yap
 
-## 4- İzleme Sunucusu Kurulumu yap, yeni bir VM örneği oluşturacağız ve bunu izleme sunucumuz olarak kullanacağız.
+## 4- İzleme Sunucusu Kurulumu yap, yeni bir VM örneği oluşturacağız ve bunu izleme sunucumuz olarak kullanacağız. (Ubuntu 22.04.4 LTS ve 20 GB)
 
 ## 5- Prometheus'u İzleme Sunucusuna Kurun bunun için:
     1- 
