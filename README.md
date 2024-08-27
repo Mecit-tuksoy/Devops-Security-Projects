@@ -111,10 +111,9 @@ This project aims to create a secure, scalable, and high-performance streaming p
     WantedBy=multi-user.target
     ````
 
-
-sudo systemctl enable prometheus 
-sudo systemctl start prometheus 
-sudo systemctl status prometheus
+    sudo systemctl enable prometheus 
+    sudo systemctl start prometheus 
+    sudo systemctl status prometheus
 
 
 ## 6- Node Exporter'u İzleme Sunucusuna Kurun bunun için:
