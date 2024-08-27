@@ -84,7 +84,7 @@ This project aims to create a secure, scalable, and high-performance streaming p
     sh````
      sudo nano /etc/systemd/system/prometheus.service
     ````
-sh````
+ sh````
 [Unit]
 Description=Prometheus
 Wants=network-online.target
@@ -109,13 +109,13 @@ ExecStart=/usr/local/bin/prometheus \
 
 [Install]
 WantedBy=multi-user.target
-````
+ ````
 
-   sh````
+
 sudo systemctl enable prometheus 
 sudo systemctl start prometheus 
 sudo systemctl status prometheus
-   ````
+
 
 ## 6- Node Exporter'u İzleme Sunucusuna Kurun bunun için:
      1- 
