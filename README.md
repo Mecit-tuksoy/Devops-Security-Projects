@@ -23,19 +23,19 @@ The project includes:
 This project aims to create a secure, scalable, and high-performance streaming platform clone by combining modern web development techniques, DevOps practices, and cloud technologies. At the same time, it provides a continuous improvement and security-focused development process using industry-standard tools.
 
 
-Proje aşamaları:
+# Proje aşamaları:
 
-# 1- Gcloud'da VM instances oluştur (Ubuntu 22.04.4 LTS  ve  20 GB)
-# 2- İnstance için firewall ayarlarını yap. İhtiyacımız olacak portlar: 8080, 8081, 9000, 9090. 9100
-# 3- Bu server'a:
+## 1- Gcloud'da VM instances oluştur (Ubuntu 22.04.4 LTS  ve  20 GB)
+## 2- İnstance için firewall ayarlarını yap. İhtiyacımız olacak portlar: 8080, 8081, 9000, 9090. 9100
+## 3- Bu server'a:
     1- Jenkins kurulumunu yap ve brawserdan erişimi sağla
     2- Docker kurulumu yap
     3- SonarQube Konteynerini Oluştur sh``docker run -d --name sonar -p 9000:9000 sonarqube:lts-community`` 
     4- Trivy Kurulumu yap
 
-# 4- İzleme Sunucusu Kurulumu yap, yeni bir VM örneği oluşturacağız ve bunu izleme sunucumuz olarak kullanacağız.
+## 4- İzleme Sunucusu Kurulumu yap, yeni bir VM örneği oluşturacağız ve bunu izleme sunucumuz olarak kullanacağız.
 
-# 5- Prometheus'u İzleme Sunucusuna Kurun bunun için:
+## 5- Prometheus'u İzleme Sunucusuna Kurun bunun için:
     1- 
     - “prometheus” adında bir sistem kullanıcısı oluşturu`yoruz
     sh``sudo useradd \ 
@@ -118,7 +118,7 @@ sudo systemctl start prometheus
 sudo systemctl status prometheus
    ````
 
-# 6- Node Exporter'u İzleme Sunucusuna Kurun bunun için:
+## 6- Node Exporter'u İzleme Sunucusuna Kurun bunun için:
      1- 
     sh``
      sudo useradd \
@@ -182,5 +182,5 @@ sudo systemctl start node_exporter
 sudo systemctl status node_exporter
 ````
 
-# 7- Prometheus için Statik Hedef Oluşturma
+## 7- Prometheus için Statik Hedef Oluşturma
 
