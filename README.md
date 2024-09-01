@@ -306,3 +306,27 @@ This project aims to create a secure, scalable, and high-performance streaming p
     2- “Jenkins’i Yönet” → “Eklentileri Yönet” → “Kullanılabilir Eklentiler”e gidin.
 
     3- Burada arama çubuğuna "prometheus" yaz. ilk çıkan eklentiyi indir.
+
+    4- Jenkin'i yeniden başlat.
+
+    5- http://Jenkins_server_public_ip:8080/prometheus   adresinden JSON formatında metrikler görebiliyorsanız, endpoint çalışıyor demektir. Eğer çalışmıyorsa, Jenkins'teki eklentiyi kontrol edin.
+
+
+## 11- Monitöring serverda prometheus.yml konfigürasyon dosyasına jenkinsi ekle
+
+    1- sudo nano /etc/prometheus/prometheus.yml
+
+    2- 
+    - job_name: jenkins
+    metrics_path: "/prometheus"
+    static_configs:
+      - targets: ["<jenkins-ip>:8080"]
+  
+    3- Kontrol için:
+    promtool check config /etc/prometheus/prometheus.yml
+    curl -X POST http://localhost:9090/-/reload
+
+
+
+
+
