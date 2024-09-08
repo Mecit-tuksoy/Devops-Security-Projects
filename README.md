@@ -189,8 +189,8 @@ This project aims to create a secure, scalable, and high-performance streaming p
     2- prometheus.yml dosyasının en altına bunu yapıştır:
     sh``
     - job_name: node_export
-    static_configs:
-      - targets: ["localhost:9100"]
+      static_configs:
+        - targets: ["localhost:9100"]
     ``
 
     3- Kontrol için:
@@ -318,15 +318,370 @@ This project aims to create a secure, scalable, and high-performance streaming p
 
     2- 
     - job_name: jenkins
-    metrics_path: "/prometheus"
-    static_configs:
-      - targets: ["<jenkins-ip>:8080"]
+      metrics_path: "/prometheus"
+      static_configs:
+        - targets: ["<jenkins-ip>:8080"]
   
     3- Kontrol için:
     promtool check config /etc/prometheus/prometheus.yml
     curl -X POST http://localhost:9090/-/reload
 
 
+## 12- Jenkins ile E-posta Entegrasyonunu Ayarlama ve Eklentiyi Yükleme
+
+    1- Burada, e-posta gönderebilmek için Gmail hesabımızdan bir uygulama şifresi almamız gerekiyor. Gmail hesabımıza gidelim ve şifreyi üretelim.
+       Bu işlemlerin yapılabilmesi için iki adımlı doğrulamanın etkinleştirilmesi gerekmektedir.
+       Bu işlemi yaptıktn sonra "uygulama şifreleri"ne gidin. Bir ad belirleyin "jenkins" ve oluştur deyin.
+       Gelen şifreyi kaydedin.
+
+    2- Jenkinse girerek Jenkins'i Yönet > Sistem > E-posta Bilgilendirmesi  bölümüne geliyoruz. Aşağıdaki bölümleri dolduralım.
+       SMTP sunucusu
+        "smtp.gmail.com"
+       Use SMTP Authentication?
+        Kullanıcı adı
+        "mecit.tuksoy@gmail.com"
+        şifre
+        "kaydettiğimiz şifreyi girelim"
+        SSL kullan  kısmına tik koyuyoruz.
+        SMTP Portu?
+         "465"
+        İsterseniz en alttaki kısmı doldurarak test maili atabilirsiniz.
+    
+    3- Jenkinsfile kullanımı için kimlik bilgileri olarak e-postamızı ve şifrelerimizi ekliyoruz.
+
+       “Jenkins'i Yönet” → “Kimlik Bilgileri”ne gidin ve e-posta kullanıcı adınızı ve oluşturulan parolayı ekleyin. 
+       Kind
+        "Username with password"
+       Username
+        "mecit.tuksoy@gmail.com"
+       ID
+        "mail"
+       oluştur.
+    
+    4- Jenkins'i Yönet > Sistem > Extended E-mail Notification
+
+       SMTP server
+        "smtp.gmail.com"
+       SMTP Port
+        "465"
+       Credentials
+        "mecit.tuksoy@gmail.com/****** (mail)"
+        "Use SSL"
+       Default Content Type
+        "HTML (text/html)"
+       Default Triggers
+         "Always" ve "failure- Any"
+       Kaydet
 
 
+## 13- Jenkins İşi ​​Oluşturma
+
+    1- "Yeni Öğe" tıkla isim "Netfilix" gir "Pipeline" işaretle ve "Tamam" tıkla.
+       "Pipeline" tıklayarak "script" kısmına aşağıdaki post bloğunu yapıştırın ve kaydedin.
+
+        post {
+            always {
+                emailext attachLog: true,
+                    subject: "'${currentBuild.result}'",
+                    body: "Project: ${env.JOB_NAME}<br/>" +
+                        "Build Number: ${env.BUILD_NUMBER}<br/>" +
+                        "URL: ${env.BUILD_URL}<br/>",
+                    to: 'mecit.tuksoy@gmail.com@gmail.com',  #change Your mail
+                    attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
+                }
+            }
+
+
+
+## 14- Manage Jenkins'te Sonar Sunucusunu Yapılandırma
+
+   1- Container ile kurduğumuz Sonarqube'e tarayıcıdan "public_ip:9000" ile girelim
+   
+   2- Administration > security > Users > Update Token yaptıktan sonra buraya bir isim veriyorum "jenkin" gibi gün seçip "Generate" tıkla. 
+
+   3- Oluşan tokenı kaydetmek için jenkinsde: 
+   "Manage Jenkins → Credentials → System → Global Credentials → Add Credentials → Secret Text'e" git
+   "Secret" kısmına tokenı yapıştır
+   "ID" kısmına "Sonar-token" gibi bir isim ver. "Create" tıkla.
+
+   4- Jenkins’e "SonarQube Scanner" eklentisini yüklemek için:
+   "Manage Jenkins → Eklentiler → Yüklenebilecek eklentiler → arama çubuğuna "SonarQube Scanner" yaz ve eklentiyi yükle.
+
+   5- "Manage Jenkins → System → SonarQube server → Add SonarQube "
+   "Name" = sonar-server
+   "Server URL" = SonarQube-public-ip:9000
+   "Server authentication token" = Sonar-token
+   kaydet
+
+   5- "Manage Jenkins → Tool → SonarQube Scanner kurulumları → 
+   "Name" = sonar-scanner
+   "Version" = 5.0.1.3006
+   kaydet
+
+   6- Tarayıcımızdaki SonarQube' gidip 
+   Administration > Cofiguration > Webhooks > Create >
+   "Name" = jenkins
+   "URL" = http://jenkins-server-ip:8080/sonarqube-webhook/
+   create
+
+
+Boru hattını çalıştırmadan önce, Node ve JVM sürümlerimizi kontrol etmemiz gerekir. Bunları Jenkinsfile'ın gerektirdiği şekilde yapılandırmalıyız.
+
+Bu boru hattında, “jdk ‘jdk17’” ifadesi JDK 17'nin Jenkins sunucusunda yüklü olduğunu ve boru hattının bu JDK sürümünü kullanacağını gösterir. Benzer şekilde, “nodejs ‘node16’” ifadesi, Jenkins sunucusunda Node.js sürüm 16'nın yüklü olduğunu ve boru hattının bu sürümü kullanacağını gösterir.
+
+
+>>> Jenkinsde yüklenebilecek eklentiler bölümünden "NodeJS" eklentisini yükleyelim
+>>> Jenkinsde araçlar bölümünden "NodeJS 16.20.2" ekleyelim 
+>>> Jenkinsde araçlar bölümünden "JDK" ekleyelim. buraya JAVA_HOME değişkenine jenkins serverdaki bu yolu verelim "/usr/lib/jvm/java-17-openjdk-amd64" ve kaydedelim.
+
+
+## 15- Jenkins pipeline oluşturma
+
+  >>> "Netfilix" pipelineı seçelim "Configure" tıklayalım. Aşağıdaki pipeline yapıştıralım:
+````sh
+  pipeline{
+    agent any
+    tools{
+        jdk 'jdk17'
+        nodejs 'node16'
+    }
+    environment {
+        SCANNER_HOME=tool 'sonar-scanner'
+    }
+    stages {
+        stage('clean workspace'){
+            steps{
+                cleanWs()
+            }
+        }
+        stage('Checkout from Git'){
+            steps{
+                git branch: 'main', url: 'https://github.com/foriinji/Devops-Security-Projects.git'
+            }
+        }
+        stage("Sonarqube Analysis "){
+            steps{
+                withSonarQubeEnv('sonar-server') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Netflix \
+                    -Dsonar.projectKey=Netflix '''
+                }
+            }
+        }
+        stage("quality gate"){
+           steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token' 
+                }
+            } 
+        }
+        stage('Install Dependencies') {
+            steps {
+                sh "npm install"
+            }
+        }
+    }
+    post {
+     always {
+        emailext attachLog: true,
+            subject: "'${currentBuild.result}'",
+            body: "Project: ${env.JOB_NAME}<br/>" +
+                "Build Number: ${env.BUILD_NUMBER}<br/>" +
+                "URL: ${env.BUILD_URL}<br/>",
+            to: 'mecit.tuksoy@gmail.com',
+            attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
+        }
+    }
+}
+````
+
+
+>>> Bu işlem hattı, bir Java projesi için GitHub deposundan kod alır, bağımlılıkları yükler, SonarQube analizini gerçekleştirir, kalite kapısını bekler ve son olarak bir e-posta bildirimi gönderir.
+
+>>> "Build Now" tıklayıp pipelineı takip edebiliriz. Başarılı mesajı maile gelecektir.
+
+## 16- OWASP Bağımlılık Kontrol Eklentilerini Yükleyin
+
+  1- Jenkins'i Yönet → Eklentiler → Yüklenebilir eklentiler → "OWASP Bağımlılık Kontrolü" yükle
+
+  2- Jenkins'i Yönet → Araçlar → Dependency-Check kurulumları → Dependency-Check ekle
+  "Name" = DP-Check
+  "Install automatically" = Install from github.com
+  "Version" = son versionu seçelim
+  kaydet
+
+
+>>> Pipelinea giderek configure edip pipelinea aşağıdaki adımı ekliyoruz:
+ 
+````sh
+        stage('OWASP FS SCAN') {
+            steps {
+                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+        stage('TRIVY FS SCAN') {
+            steps {
+                sh "trivy fs . > trivyfs.txt"
+            }
+        }
+````
+
+## 17- Docker Görüntülerini Oluşturma, Gönderme ve Dağıtma
+
+  1- Bu adıma başlamadan önce uygulamamızın çalışması için bir API anahtarı edinmemiz gerekiyor. https://www.themoviedb.org/ web sitesine kayıt olalım ve bir API anahtarı oluşturalım.
+
+  2- ayarlar > API > oluştur > Developer > kabul et > ilgili yerleri doldurup API anahtarını alıyorum.
+
+  3- jenkins kullanıcısına geçip manual olarak uygulamayı test etmek için:
+
+  ````sh
+  sudo su - jenkins 
+  cd /workspace/Netflix/ 
+  ls 
+  cat Dockerfile
+  ````
+  ````sh
+  docker build --build-arg TMDB_V3_API_KEY=<API_anahtarınızı_buraya_kaydedin> -t netflix-clone .
+  ````
+
+  ````sh
+  docker run --name netflix-clone-website --rm -d -p 8081:80 netflix-clone
+  ````
+  
+  >>>> public-ip:8081 ile uygulamayı görebiliriz. 
+
+  4- Uygulama başarılı bir şekilde çalıştığını gördüğümüze göre şimdi image ve containerı silebilriz.
+  ````sh
+  docker rm -f netflix-clone-website 
+  docker rmi netflix-clone
+  ````
+
+
+
+## 18- Jenkins ayarlarına devam:
+
+  1- Jenkinsi yönet > Eklentiler > Yüklenebilir eklentiler: aşağıdakileri yükleyelim.
+
+    Docker
+    Docker Commons
+    Docker Pipeline
+    Docker API
+    docker-build-step
+   
+   2- Jenkins'i Yönet > Araçlar > Docker kurulumları
+   "Name"= docker
+   "Install automatically"
+    Download from docker.com
+    "Docker version" = latest
+    kaydet
+
+   3- Jenkins'i Yönet > Credentials > System > Global credentials (unrestricted)
+   Kind = Username with password
+   Username = dockerhub kullanıcı adınızı girin
+   Password = dockerhub tokenınızı girin
+   ID = bir isim verin "docker" benimki pipelineda kullanacağız
+   create
+
+   4- Jenkins'de Netfilix pipelinea aşağıdaki kodları yapıştırıyoruz. 
+
+````sh
+pipeline{
+    agent any
+    tools{
+        jdk 'jdk17'
+        nodejs 'node16'
+    }
+    environment {
+        SCANNER_HOME=tool 'sonar-scanner'
+    }
+    stages {
+        stage('clean workspace'){
+            steps{
+                cleanWs()
+            }
+        }
+        stage('Checkout from Git'){
+            steps{
+                git branch: 'main', url: 'https://github.com/foriinji/Devops-Security-Projects.git'
+            }
+        }
+        stage("Sonarqube Analysis "){
+            steps{
+                withSonarQubeEnv('sonar-server') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Netflix \
+                    -Dsonar.projectKey=Netflix '''
+                }
+            }
+        }
+        stage("quality gate"){
+           steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token' 
+                }
+            } 
+        }
+        stage('Install Dependencies') {
+            steps {
+                sh "npm install"
+            }
+        }
+        // stage('OWASP FS SCAN') {
+        //     steps {
+        //         dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+        //         dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+        //     }
+        // }
+        stage('TRIVY FS SCAN') {
+            steps {
+                sh "trivy fs . > trivyfs.txt"
+            }
+        }
+        stage("Docker Build & Push"){
+            steps{
+                script{
+                   withDockerRegistry(credentialsId: 'docker', toolName: 'docker'){   
+                       sh "docker build --build-arg TMDB_V3_API_KEY=<write_your_TMDB_api_key> -t netflix ."
+                       sh "docker tag netflix mecit35/netflix:latest "
+                       sh "docker push mecit35/netflix:latest "
+                    }
+                }
+            }
+        }
+        stage('Deploy to container'){
+            steps{
+                sh 'docker rm -f netflix || true'
+                sh 'docker run -d --name netflix -p 8081:80 mecit35/netflix:latest'
+            }
+        }
+        stage('Check Application Status') {
+            steps {
+                script {
+                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://jenkins-server-public-ip:8081", returnStdout: true).trim()
+                    if (response == '200') {
+                        echo "Application is running successfully."
+                    } else {
+                        error "Application is not running. HTTP response code: ${response}"
+                    }
+                }
+            }
+        }
+        stage("TRIVY"){
+            steps{
+                sh "trivy image mecit35/netflix:latest > trivyimage.txt" 
+            }
+        }
+    }
+    post {
+     always {
+        emailext attachLog: true,
+            subject: "'${currentBuild.result}'",
+            body: "Project: ${env.JOB_NAME}<br/>" +
+                "Build Number: ${env.BUILD_NUMBER}<br/>" +
+                "URL: ${env.BUILD_URL}<br/>",
+            to: 'mecit.tuksoy@gmail.com',
+            attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
+        }
+    }
+}
+````
 
