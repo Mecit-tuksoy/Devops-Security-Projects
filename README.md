@@ -83,8 +83,7 @@ This project aims to create a secure, scalable, and high-performance streaming p
 ## 4- İzleme Sunucusu Kurulumu yap, yeni bir VM örneği oluşturacağız ve bunu izleme sunucumuz olarak kullanacağız. (Ubuntu 22.04.4 LTS ve 20 GB)
 
 ## 5- Prometheus'u İzleme Sunucusuna Kurun bunun için:
-    1- 
-    - “prometheus” adında bir sistem kullanıcısı oluşturu`yoruz
+    1-“prometheus” adında bir sistem kullanıcısı oluşturu`yoruz
   ````sh
   sudo useradd \ 
     --system \ 
