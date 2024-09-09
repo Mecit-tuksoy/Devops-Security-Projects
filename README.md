@@ -118,12 +118,12 @@ This project aims to create a secure, scalable, and high-performance streaming p
 
 ## 6- Node Exporter'u İzleme Sunucusuna Kurun bunun için:
      1- 
-    sh``
-     sudo useradd \
-     --system \
-     --no-create-home \
-     -shell /bin/false node_exporter
-      ``
+````sh
+sudo useradd \
+--system \
+--no-create-home \
+--shell /bin/false node_exporter
+````
      2- 
     - Node Exporter dosyasını indir
     sh``wget https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_exporter-1.8.0.linux-amd64.tar.gz``
@@ -685,3 +685,386 @@ pipeline{
 }
 ````
 
+## 19- Kubernetes Kurulumu
+
+   1- 2 tane Ubuntu 20.04 LTS imajı ve e2-medium türünde sanal makine oluşturuyoruz. Master ve worker.
+
+   2- Master makineye bağlanarak aşağıdaki betiği içeren "bir master.sh" dosyası oluşturuyoruz. İzinlerini ayarlayıp çalıştırıyoruz.
+
+````sh
+sudo nano master.sh
+````
+
+````sh
+#!/bin/bash
+# APT update
+sudo apt update
+
+# Installation of Kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+# Installation and configuration of Docker
+sudo apt-get update
+sudo apt-get install -y docker.io
+sudo usermod -aG docker $USER
+grep '^docker:' /etc/group; getent group docker
+sudo chmod 777 /var/run/docker.sock
+
+# System update and installation of necessary packages
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+sudo mkdir -p /etc/apt/keyrings/
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+# Installation of Kubernetes
+sudo apt-get update
+sudo apt-get install -y kubelet=1.29.0-1.1 kubeadm=1.29.0-1.1 kubernetes-cni
+sudo apt-mark hold kubelet kubeadm kubectl
+
+# Starting and enabling Docker service
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Loading kernel modules and sysctl configuration
+sudo tee /etc/modules-load.d/k8s.conf <<EOF
+overlay
+br_netfilter
+EOF
+
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+sudo tee /etc/sysctl.d/k8s.conf <<EOF
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+
+sudo sysctl --system
+
+# Installation and configuration of Containerd
+sudo apt update
+sudo apt install -y containerd
+sudo systemctl start containerd
+sudo systemctl enable containerd
+sudo mkdir -p /etc/containerd
+sudo containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+sudo systemctl restart containerd
+
+# Checking the status of Containerd
+echo "Installation completed!"
+````
+   
+````sh
+sudo chmod +x master.sh 
+bash master.sh
+````
+
+   3- Kubernetes kümesinin ana makinemizde çalışabilmesi için gerekli temel bileşenleri kuralım.
+
+````sh
+sudo nano kubernetes.sh
+````
+
+````sh
+#!/bin/bash
+
+set -e  # Exit immediately if a command exits with a non-zero status.
+
+# Pull Kubernetes images
+sudo kubeadm config images pull
+
+# Initialize Kubernetes cluster
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=All
+
+# Set up kubeconfig for the user
+USER_HOME=$(eval echo ~$USER)
+sudo mkdir -p $USER_HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $USER_HOME/.kube/config
+sudo chown $USER:$USER $USER_HOME/.kube/config
+
+# Apply Flannel pod network
+sudo -i -u $USER kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
+
+# Apply Local Path Provisioner
+sudo -i -u $USER kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.26/deploy/local-path-storage.yaml
+
+# Set Local Path StorageClass as default
+sudo -i -u $USER kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+echo "Kubernetes cluster setup complete!"
+````
+
+````sh
+sudo chmod +x kubernetes.sh 
+bash kubernetes.sh 
+kubectl get no
+````
+
+   4- Şimdi workera bağlanalım ve kuruluma devam edelim. Workerda gerekli bileşenleri kurmak için masterda yaptığımıza benzer adımları takip edeceğiz.
+
+````sh
+sudo nano worker.sh
+````
+
+````sh
+#!/bin/bash
+# APT update
+sudo apt update
+
+# Installation of Kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+# Installation and configuration of Docker
+sudo apt-get update
+sudo apt-get install -y docker.io
+sudo usermod -aG docker $USER
+grep '^docker:' /etc/group; getent group docker
+sudo chmod 777 /var/run/docker.sock
+
+# System update and installation of necessary packages
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+sudo mkdir -p /etc/apt/keyrings/
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+# Installation of Kubernetes
+sudo apt-get update
+sudo apt-get install -y kubelet=1.29.0-1.1 kubeadm=1.29.0-1.1 kubernetes-cni
+sudo apt-mark hold kubelet kubeadm kubectl
+
+# Starting and enabling Docker service
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Loading kernel modules and sysctl configuration
+sudo tee /etc/modules-load.d/k8s.conf <<EOF
+overlay
+br_netfilter
+EOF
+
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+sudo tee /etc/sysctl.d/k8s.conf <<EOF
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+
+sudo sysctl --system
+
+# Installation and configuration of Containerd
+sudo apt update
+sudo apt install -y containerd
+sudo systemctl start containerd
+sudo systemctl enable containerd
+sudo mkdir -p /etc/containerd
+sudo containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+sudo systemctl restart containerd
+
+# Checking the status of Containerd
+echo "Installation completed!"
+````
+
+````sh
+sudo chmod +x worker.sh 
+./worker.sh
+````
+
+   5- Kubernetes work node'unu master'a bağlayalım. Eğer ek work node'lar oluşturursak, 
+   bu şekilde master ile bağlantılarını sağlayabiliriz. Gerekli birleştirme komutunu almak için 
+   master node ta aşağıdaki komutu çalıştıralım:
+
+````sh
+sudo kubeadm token create --print-join-command
+````
+>>> Gelen çıktıyı worker node a yapıştırıyoruz aşağıdaki gibi bir şey:
+
+````sh
+sudo kubeadm join 10.182.0.5:6443 --token u4rdkh.hz16x9z9lqy5ysrg --discovery-token-ca-cert-hash sha256:dd41f62822bc8b897d4a843eb4be1daf4426570318f9a28c827d88fcb4d7738b
+````
+
+>>> master node ta ````sh kubectl get no```` komutu ile worker node u görebiliriz.
+
+## 20- Metriklerini izlemek için hem ana hem de çalışan düğümlere Node Exporter'ı yükleyelim 
+
+````sh
+sudo useradd \
+--system \
+--no-create-home \
+--shell /bin/false node_exporter
+````
+
+````sh
+wget https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_exporter-1.8.0.linux-amd64.tar.gz 
+tar -xvf node_exporter-1.8.0.linux-amd64.tar.gz 
+sudo mv node_exporter-1.8.0.linux-amd64/node_exporter /usr/local/bin/
+rm -rf node_exporter* 
+node_exporter --version
+````
+
+````sh
+sudo nano /etc/systemd/system/node_exporter.service
+````
+
+````sh
+[Unit]
+Description=Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+Restart=on-failure
+RestartSec=5s
+ExecStart=/usr/local/bin/node_exporter \
+    --collector.logind
+
+[Install]
+WantedBy=multi-user.target
+````
+
+````sh
+sudo systemctl enable node_exporter
+sudo systemctl start node_exporter
+sudo systemctl status node_exporter
+````
+
+>>> Monitoring servera bağlanarak prometheus.yml konfigürasyon dosyasını ekleme yapıyoruz
+
+````sh
+sudo nano /etc/prometheus/prometheus.yml 
+````
+
+```bash
+- job_name: master
+    static_configs:
+      - targets: ["master_public_ip:9100"]
+
+- job_name: worker
+    static_configs:
+      - targets: ["worker_public_ip:9100"]
+```
+````sh
+promtool check config /etc/prometheus/prometheus.yml
+curl -X POST http://localhost:9090/-/reload
+````
+
+## 21- Jenkins sunucusuna kubectl kurulumu:
+
+   1- Bu aşamada Jenkins ile Kubernetes kümemiz arasında bir bağlantı kurmamız gerekiyor.
+   Jenkins'in Kubernetes kümesini yönetebilmesi için Jenkins sunucusuna kubectl yüklememiz gerekiyor.
+
+````sh
+sudo nano kube.sh
+````
+   
+````sh
+sudo apt update
+sudo apt install curl -y
+curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+kubectl version --client
+````
+
+````sh
+sudo chmod +x kube.sh 
+bash kube.sh
+````
+
+   2- Master nodeda /home/.kube klasörü altındaki "config" dosyasını bir yere kaydediyoruz.  ismini "secret-file.txt" yaptım.
+   Bu dosyayı Kubernetes kimlik bilgisi bölümünde kullanıcağız.
+
+   3- Jenkins'te Kubernetes'i yönetmek için Kubernetes eklentilerini indirip yüklemeniz gerekir. bunun için:
+
+   Jenkins'i Yönet > Eklentiler > Yüklenebilecek eklentiler  bölümüne gidip aşağıdaki eklentileri ekliyoruz:
+   Kubernetes Credential
+   Kubernetes Client API
+   Kubernetes
+   Kubernetes CLI
+   
+   4- “Manage Jenkins” → “Manage Credentials” → Click on “Jenkins” global → “Add Credentials”.
+
+   "Kind" = Secret file  
+   "File" = secret-file.txt dosyasını seçiyoruz.
+   "ID" = k8s
+   creste
+
+   5- Kubernetes için manifesto yaml dosyaları aşağıdaki gibi olacak:
+
+>>>deployment.yml
+````sh
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netflix-app
+  labels:
+    app: netflix-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: netflix-app
+  template:
+    metadata:
+      labels:
+        app: netflix-app
+    spec:
+      containers:
+      - name: netflix-app
+        image: mecit35/netflix:latest
+        ports:
+        - containerPort: 80
+````
+
+>>> service.yml
+````sh
+apiVersion: v1
+kind: Service
+metadata:
+  name: netflix-app
+  labels:
+    app: netflix-app
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30007
+  selector:
+    app: netflix-app
+````
+
+
+   6- "Netfilix" pipelinina kubernetes kümesinde deploy etmesi için aşağıdaki adımı ekliyoruz.
+
+````sh
+        stage('Deploy to kubernets'){
+            steps{
+                script{
+                    dir('Kubernetes') {
+                        withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
+                                sh 'kubectl apply -f deployment.yml'
+                                sh 'kubectl apply -f service.yml'
+                        }   
+                    }
+                }
+            }
+        }
+````
+
+ 
