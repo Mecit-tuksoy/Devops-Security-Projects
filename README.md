@@ -102,33 +102,41 @@ tar -xvf prometheus-2.51.2.linux-amd64.tar.gz
 ````
    
     - Prometheus verileri ve yapılandırma dosyaları için dizinler oluştur
-    sh ``sudo mkdir -p /data /etc/prometheus ``
-
+ ````sh
+ sudo mkdir -p /data /etc/prometheus
+````
     - Prometheus ikili dosyalarını /usr/local/bin/ dizinine taşı 
-    sh ``cd prometheus-2.51.2.linux-amd64/ 
-        sudo mv prometheus promtool /usr/local/bin/ ``
-
+````sh 
+cd prometheus-2.51.2.linux-amd64/ 
+sudo mv prometheus promtool /usr/local/bin/
+````
     - Konsol şablonlarını ve kitaplıklarını /etc/prometheus/ dizinine taşı
-    sh ``sudo mv consoles/ console_libraries/ /etc/prometheus/ ``
-
+````sh
+sudo mv consoles/ console_libraries/ /etc/prometheus/
+````
     - Prometheus yapılandırma dosyasını /etc/prometheus/ dizinine taşı
-    sh ``sudo mv prometheus.yml /etc/prometheus/prometheus.yml ``
-
+````sh
+sudo mv prometheus.yml /etc/prometheus/prometheus.yml
+````
     - Prometheus yapılandırma ve veri dizinlerinin sahipliğini 'prometheus' kullanıcısına değiştir
-    sh ``sudo chown -R prometheus:prometheus /etc/prometheus/ /data/ ``
-
+````sh
+sudo chown -R prometheus:prometheus /etc/prometheus/ /data/
+````
     - Ana dizine geri dön 
-    sh ``cd`` 
-
+````sh
+cd 
+````
     - İndirilen Prometheus arşiv dosyasını kaldır 
-    sh ``rm -rf prometheus-2.51.2.linux-amd64.tar.gz ``
-
+````sh
+rm -rf prometheus-2.51.2.linux-amd64.tar.gz
+````
     - Prometheus sürümünü kontrol et
-    sh `` prometheus --version ``
+sh `` prometheus --version ``
 
     - Prometheus yardımını görüntüle
-    sh `` prometheus --help ``
-
+````sh
+prometheus --help
+````
     3-
     Prometheus için systemd yapılandırması, Prometheus'un Linux sistemlerinde bir hizmet olarak çalışmasını sağlayarak sistem yeniden başlatıldığında veya hizmetin yönetilmesi gerektiğinde otomatik olarak başlamasını sağlar.
 
