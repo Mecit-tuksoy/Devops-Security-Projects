@@ -85,17 +85,20 @@ This project aims to create a secure, scalable, and high-performance streaming p
 ## 5- Prometheus'u İzleme Sunucusuna Kurun bunun için:
     1- 
     - “prometheus” adında bir sistem kullanıcısı oluşturu`yoruz
-    sh``sudo useradd \ 
+  ````sh
+  sudo useradd \ 
     --system \ 
     --no-create-home \ 
-    --shell /bin/false prometheus``
-    
+    --shell /bin/false prometheus
+  ````  
     2- 
     - Prometheus dosyasını indir
-    sh``wget https://github.com/prometheus/prometheus/releases/download/v2.51.2/prometheus-2.51.2.linux-amd64.tar.gz``
+````sh
+     wget https://github.com/prometheus/prometheus/releases/download/v2.51.2/prometheus-2.51.2.linux-amd64.tar.gz
+````
   
     - Tar dosyasını açıyoruz:
-    sh``tar -xvf prometheus-2.51.2.linux-amd64.tar.gz``
+````sh tar -xvf prometheus-2.51.2.linux-amd64.tar.gz ````
    
     - Prometheus verileri ve yapılandırma dosyaları için dizinler oluştur
     sh ``sudo mkdir -p /data /etc/prometheus ``
