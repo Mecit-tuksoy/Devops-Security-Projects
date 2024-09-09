@@ -97,7 +97,9 @@ This project aims to create a secure, scalable, and high-performance streaming p
 ````
   
     - Tar dosyasını açıyoruz:
-````sh tar -xvf prometheus-2.51.2.linux-amd64.tar.gz ````
+````sh 
+tar -xvf prometheus-2.51.2.linux-amd64.tar.gz
+````
    
     - Prometheus verileri ve yapılandırma dosyaları için dizinler oluştur
     sh ``sudo mkdir -p /data /etc/prometheus ``
