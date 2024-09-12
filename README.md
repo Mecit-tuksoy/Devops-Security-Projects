@@ -1192,4 +1192,4 @@ spec:
         }
 ````
 
- 
+ Bu aşama, Jenkins pipeline'ın bir parçası olarak Kubernetes cluster'ına kaynakları dağıtır. deployment.yml ve service.yml dosyalarının bulunduğu Kubernetes dizinine geçer, belirtilen cluster'a bağlanır ve bu dosyalarla belirtilen Kubernetes kaynaklarını uygular (oluşturur veya günceller). Bu işlem, uygulamanın Kubernetes ortamında çalışmasını sağlar.
