@@ -592,7 +592,7 @@ Bu boru hattında, “jdk ‘jdk17’” ifadesi JDK 17'nin Jenkins sunucusunda 
 ````
 
 
->>> Bu işlem hattı, bir Java projesi için GitHub deposundan kod alır, bağımlılıkları yükler, SonarQube analizini gerçekleştirir, kalite kapısını bekler ve son olarak bir e-posta bildirimi gönderir.
+>>> Bu işlem hattı, bir Java projesi için GitHub deposundan kod alır, bağımlılıkları yükler, SonarQube analizini gerçekleştirir, SonarQube kalite kapısı kontrolü yapar. Kalite kapısı kriterlerini karşılayıp karşılamadığına göre pipeline'ın devam edip etmeyeceğine karar verir ve son olarak bir e-posta bildirimi gönderir.
 
 >>> "Build Now" tıklayıp pipelineı takip edebiliriz. Başarılı mesajı maile gelecektir.
 
