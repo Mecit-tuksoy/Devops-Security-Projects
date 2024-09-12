@@ -346,7 +346,7 @@ promtool check config /etc/prometheus/prometheus.yml
 curl -X POST http://localhost:9090/-/reload 
 ````
 
-## 9- Monitörig serverda Grafana Kurulumu ve Yapılandırması:
+## 10- Monitörig serverda Grafana Kurulumu ve Yapılandırması:
 
     1- Install necessary packages for adding Grafana repository
 ````sh
@@ -389,7 +389,7 @@ sudo systemctl status grafana-server
     12- Dashboarts kısmından güzel bir dashbort import ediyoruz. Ben "1860" kullandım.
 
 
-## 10- Prometheus Eklentisinin Jenkins'e Kurulumu ve Entegrasyonu:
+## 11- Prometheus Eklentisinin Jenkins'e Kurulumu ve Entegrasyonu:
 
     1- Jenkins_server_public_ip :8080 ile jenkinse bağlan
     
@@ -402,7 +402,7 @@ sudo systemctl status grafana-server
     5- http://Jenkins_server_public_ip:8080/prometheus   adresinden JSON formatında metrikler görebiliyorsanız, endpoint çalışıyor demektir. Eğer çalışmıyorsa, Jenkins'teki eklentiyi kontrol edin.
 
 
-## 11- Monitöring serverda prometheus.yml konfigürasyon dosyasına jenkinsi ekle
+## 12- Monitöring serverda prometheus.yml konfigürasyon dosyasına jenkinsi ekle
 
     1- sudo nano /etc/prometheus/prometheus.yml
 
@@ -419,12 +419,13 @@ promtool check config /etc/prometheus/prometheus.yml
 curl -X POST http://localhost:9090/-/reload
 ````
 
-## 12- Jenkins ile E-posta Entegrasyonunu Ayarlama ve Eklentiyi Yükleme
+## 13- Jenkins ile E-posta Entegrasyonunu Ayarlama ve Eklentiyi Yükleme
 
-    1- Burada, e-posta gönderebilmek için Gmail hesabımızdan bir uygulama şifresi almamız gerekiyor. Gmail hesabımıza gidelim ve şifreyi üretelim.
-       Bu işlemlerin yapılabilmesi için iki adımlı doğrulamanın etkinleştirilmesi gerekmektedir.
-       Bu işlemi yaptıktn sonra "uygulama şifreleri"ne gidin. Bir ad belirleyin "jenkins" ve oluştur deyin.
-       Gelen şifreyi kaydedin.
+    1- Burada, e-posta gönderebilmek için Gmail hesabımızdan bir uygulama şifresi almamız gerekiyor. 
+    Gmail hesabımıza gidelim ve şifreyi üretelim.
+    Bu işlemlerin yapılabilmesi için iki adımlı doğrulamanın etkinleştirilmesi gerekmektedir.
+    Bu işlemi yaptıktn sonra "uygulama şifreleri"ne gidin. Bir ad belirleyin "jenkins" ve oluştur deyin.
+    Gelen şifreyi kaydedin.
 
     2- Jenkinse girerek Jenkins'i Yönet > Sistem > E-posta Bilgilendirmesi  bölümüne geliyoruz. Aşağıdaki bölümleri dolduralım.
        SMTP sunucusu
