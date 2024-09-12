@@ -93,7 +93,7 @@ This project aims to create a secure, scalable, and high-performance streaming p
     2- 
     - Prometheus dosyasını indir
 ````sh
-     wget https://github.com/prometheus/prometheus/releases/download/v2.51.2/prometheus-2.51.2.linux-amd64.tar.gz
+wget https://github.com/prometheus/prometheus/releases/download/v2.51.2/prometheus-2.51.2.linux-amd64.tar.gz
 ````
   
     - Tar dosyasını açıyoruz:
