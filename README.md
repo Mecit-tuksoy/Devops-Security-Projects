@@ -179,7 +179,7 @@ prometheus --help
 ````
 
 ## 6- Node Exporter'u İzleme Sunucusuna Kurun bunun için:
-     1- 
+     1- “node_exporter” adında bir sistem kullanıcısı oluşturu`yoruz
 ````sh
 sudo useradd \
 --system \
@@ -212,8 +212,8 @@ node_exporter --version
 node_exporter --help
 ````
 
-    3-
-    Node Exporter için systemd yapılandırması, Node Exporter'un Linux sistemlerinde bir hizmet olarak çalışmasını sağlayarak sistem yeniden başlatıldığında veya hizmetin yönetilmesi gerektiğinde otomatik olarak başlamasını sağlar.
+3-
+Node Exporter için systemd yapılandırması, Node Exporter'un Linux sistemlerinde bir hizmet olarak çalışmasını sağlayarak sistem yeniden başlatıldığında veya hizmetin yönetilmesi gerektiğinde otomatik olarak başlamasını sağlar.
 
 ````sh
       sudo nano /etc/systemd/system/node_exporter.service
