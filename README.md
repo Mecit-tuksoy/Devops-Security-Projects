@@ -797,7 +797,7 @@ pipeline{
 }
 ````
 
-Bu pipeline, Docker imajı oluşturma, etiketleme, Docker Hub'a push etme, container'da çalıştırma, uygulama durumunu kontrol etme ve Docker imajı için Trivy taraması yapmayı içerir. 
+Bu pipeline; Docker imajı oluşturma, etiketleme, Docker Hub'a push etme, container'da çalıştırma, uygulama durumunu kontrol etme ve Docker imajı için Trivy taraması yapmayı içerir. 
 OWASP Dependency-Check taraması ve rapor oluşturma adımı uzun sürdüğü ve bir önceki pipelineda gösterildiği için bu aşamada yorum haline getirilmiştir.
 
 ## 19- Kubernetes Kurulumu
@@ -873,6 +873,8 @@ sudo systemctl restart containerd
 # Checking the status of Containerd
 echo "Installation completed!"
 ````
+
+Bu script, Kubernetes ve Docker kurulumu için gereken tüm adımları içerir ve sistemin Kubernetes cluster'ı çalıştırmaya hazır hale getirilmesini sağlar. Ayrıca, gerekli kernel ayarları yapılır ve containerd container runtime yapılandırılır.
    
 ````sh
 sudo chmod +x master.sh 
@@ -913,6 +915,7 @@ sudo -i -u $USER kubectl patch storageclass local-path -p '{"metadata": {"annota
 
 echo "Kubernetes cluster setup complete!"
 ````
+Bu script, Flannel ağ eklentisini ve yerel depolama sınıfını (Local Path Provisioner) ayarlayarak, cluster'ın tam olarak çalışır duruma gelmesini sağlar. 
 
 ````sh
 sudo chmod +x kubernetes.sh 
@@ -1107,17 +1110,24 @@ bash kube.sh
    3- Jenkins'te Kubernetes'i yönetmek için Kubernetes eklentilerini indirip yüklemeniz gerekir. bunun için:
 
    Jenkins'i Yönet > Eklentiler > Yüklenebilecek eklentiler  bölümüne gidip aşağıdaki eklentileri ekliyoruz:
+
    Kubernetes Credential
+
    Kubernetes Client API
+
    Kubernetes
+
    Kubernetes CLI
    
    4- “Manage Jenkins” → “Manage Credentials” → Click on “Jenkins” global → “Add Credentials”.
 
-   "Kind" = Secret file  
+   "Kind" = Secret file 
+
    "File" = secret-file.txt dosyasını seçiyoruz.
+
    "ID" = k8s
-   creste
+
+   create
 
    5- Kubernetes için manifesto yaml dosyaları aşağıdaki gibi olacak:
 
