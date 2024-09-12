@@ -680,13 +680,18 @@ Bu iki aşama, projenin güvenlik taramalarını gerçekleştirerek, hem bağım
 
    "Docker version" = latest
 
-    kaydet
+   kaydet
 
    3- Jenkins'i Yönet > Credentials > System > Global credentials (unrestricted)
+
    Kind = Username with password
+
    Username = dockerhub kullanıcı adınızı girin
+
    Password = dockerhub tokenınızı girin
+
    ID = bir isim verin "docker" benimki pipelineda kullanacağız
+   
    create
 
    4- Jenkins'de Netfilix pipelinea aşağıdaki kodları yapıştırıyoruz. 
