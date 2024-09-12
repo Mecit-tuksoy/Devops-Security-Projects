@@ -330,13 +330,15 @@ sudo systemctl status node_exporter
 
 ## 9- Monitoring server'da prometheus.yml configürasyon dosyasına jenkins serverı hedef olarak ekliyoruz: 
     
-    sudo nano /etc/prometheus/prometheus.yml 
+````sh
+sudo nano /etc/prometheus/prometheus.yml 
+````
 
-    ```bash
+````sh
 - job_name: node_export_jenkins
     static_configs:
       - targets: ["jenkins-server-publicIP:9100"]
-    ```
+````
 
     Kontrol için:
 ````sh
