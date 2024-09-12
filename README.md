@@ -553,7 +553,7 @@ Bu boru hattında, “jdk ‘jdk17’” ifadesi JDK 17'nin Jenkins sunucusunda 
         }
         stage('Checkout from Git'){
             steps{
-                git branch: 'main', url: 'https://github.com/foriinji/Devops-Security-Projects.git'
+                git branch: 'main', url: 'https://github.com/Mecit-tuksoy/Devops-Security-Projects.git'
             }
         }
         stage("Sonarqube Analysis "){
