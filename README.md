@@ -607,7 +607,7 @@ Bu boru hattında, “jdk ‘jdk17’” ifadesi JDK 17'nin Jenkins sunucusunda 
   "Install automatically" = Install from github.com
 
   "Version" = son versionu seçelim
-  
+
   kaydet
 
 
@@ -626,6 +626,7 @@ Bu boru hattında, “jdk ‘jdk17’” ifadesi JDK 17'nin Jenkins sunucusunda 
             }
         }
 ````
+Bu iki aşama, projenin güvenlik taramalarını gerçekleştirerek, hem bağımlılık seviyesinde (OWASP Dependency-Check) hem de dosya sistemi seviyesinde (Trivy) güvenlik açıklarını tespit eder. Elde edilen raporlar, pipeline'ın devamında değerlendirilebilir ya da inceleme için saklanabilir. 
 
 ## 17- Docker Görüntülerini Oluşturma, Gönderme ve Dağıtma
 
@@ -670,10 +671,15 @@ Bu boru hattında, “jdk ‘jdk17’” ifadesi JDK 17'nin Jenkins sunucusunda 
     docker-build-step
    
    2- Jenkins'i Yönet > Araçlar > Docker kurulumları
+
    "Name"= docker
+
    "Install automatically"
+
     Download from docker.com
+
     "Docker version" = latest
+    
     kaydet
 
    3- Jenkins'i Yönet > Credentials > System > Global credentials (unrestricted)
