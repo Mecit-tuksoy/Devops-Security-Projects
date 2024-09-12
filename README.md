@@ -676,10 +676,10 @@ Bu iki aşama, projenin güvenlik taramalarını gerçekleştirerek, hem bağım
 
    "Install automatically"
 
-    Download from docker.com
+   Download from docker.com
 
-    "Docker version" = latest
-    
+   "Docker version" = latest
+
     kaydet
 
    3- Jenkins'i Yönet > Credentials > System > Global credentials (unrestricted)
