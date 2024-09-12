@@ -427,7 +427,9 @@ curl -X POST http://localhost:9090/-/reload
     Bu işlemi yaptıktn sonra "uygulama şifreleri"ne gidin. Bir ad belirleyin "jenkins" ve oluştur deyin.
     Gelen şifreyi kaydedin.
 
-    2- Jenkinse girerek Jenkins'i Yönet > Sistem > E-posta Bilgilendirmesi  bölümüne geliyoruz. Aşağıdaki bölümleri dolduralım.
+    2- Jenkinse girerek Jenkins'i Yönet > Sistem > E-posta Bilgilendirmesi  bölümüne geliyoruz.
+    Aşağıdaki bölümleri dolduralım.
+
        SMTP sunucusu
         "smtp.gmail.com"
        Use SMTP Authentication?
@@ -467,7 +469,7 @@ curl -X POST http://localhost:9090/-/reload
        Kaydet
 
 
-## 13- Jenkins İşi ​​Oluşturma
+## 14- Jenkins İşi ​​Oluşturma
 
     1- "Yeni Öğe" tıkla isim "Netfilix" gir "Pipeline" işaretle ve "Tamam" tıkla.
        "Pipeline" tıklayarak "script" kısmına aşağıdaki post bloğunu yapıştırın ve kaydedin.
@@ -486,7 +488,7 @@ curl -X POST http://localhost:9090/-/reload
 
 
 
-## 14- Manage Jenkins'te Sonar Sunucusunu Yapılandırma
+## 15- Manage Jenkins'te Sonar Sunucusunu Yapılandırma
 
    1- Container ile kurduğumuz Sonarqube'e tarayıcıdan "public_ip:9000" ile girelim
    
@@ -524,7 +526,9 @@ Bu boru hattında, “jdk ‘jdk17’” ifadesi JDK 17'nin Jenkins sunucusunda 
 
 
 >>> Jenkinsde yüklenebilecek eklentiler bölümünden "NodeJS" eklentisini yükleyelim
+
 >>> Jenkinsde araçlar bölümünden "NodeJS 16.20.2" ekleyelim 
+
 >>> Jenkinsde araçlar bölümünden "JDK" ekleyelim. buraya JAVA_HOME değişkenine jenkins serverdaki bu yolu verelim "/usr/lib/jvm/java-17-openjdk-amd64" ve kaydedelim.
 
 
