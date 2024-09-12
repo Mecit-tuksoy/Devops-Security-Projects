@@ -714,7 +714,7 @@ pipeline{
         }
         stage('Checkout from Git'){
             steps{
-                git branch: 'main', url: 'https://github.com/foriinji/Devops-Security-Projects.git'
+                git branch: 'main', url: 'https://github.com/Mecit-tuksoy/Devops-Security-Projects.git'
             }
         }
         stage("Sonarqube Analysis "){
@@ -796,6 +796,9 @@ pipeline{
     }
 }
 ````
+
+Bu pipeline, Docker imajı oluşturma, etiketleme, Docker Hub'a push etme, container'da çalıştırma, uygulama durumunu kontrol etme ve Docker imajı için Trivy taraması yapmayı içerir. 
+OWASP Dependency-Check taraması ve rapor oluşturma adımı uzun sürdüğü ve bir önceki pipelineda gösterildiği için bu aşamada yorum haline getirilmiştir.
 
 ## 19- Kubernetes Kurulumu
 
