@@ -216,7 +216,7 @@ node_exporter --help
 Node Exporter için systemd yapılandırması, Node Exporter'un Linux sistemlerinde bir hizmet olarak çalışmasını sağlayarak sistem yeniden başlatıldığında veya hizmetin yönetilmesi gerektiğinde otomatik olarak başlamasını sağlar.
 
 ````sh
-      sudo nano /etc/systemd/system/node_exporter.service
+sudo nano /etc/systemd/system/node_exporter.service
 ````
 
 ````sh
@@ -243,16 +243,16 @@ Node Exporter için systemd yapılandırması, Node Exporter'un Linux sistemleri
 ````
 
 ````sh
-    sudo systemctl enable node_exporter
-    sudo systemctl start node_exporter
-    sudo systemctl status node_exporter
+sudo systemctl enable node_exporter
+sudo systemctl start node_exporter
+sudo systemctl status node_exporter
 ````
 
 ## 7- Prometheus için Statik Hedef Oluşturma
     
-    1-
+    1- prometheus.yml konfigürasyon dosyasını açıyoruz.
 ````sh
-    sudo nano /etc/prometheus/prometheus.yml
+sudo nano /etc/prometheus/prometheus.yml
 ````
 
     2- prometheus.yml dosyasının en altına bunu yapıştır:
@@ -264,15 +264,15 @@ Node Exporter için systemd yapılandırması, Node Exporter'un Linux sistemleri
 
     3- Kontrol için:
 ````sh
-    promtool check config /etc/prometheus/prometheus.yml
-    curl -X POST http://localhost:9090/-/reload
+promtool check config /etc/prometheus/prometheus.yml
+curl -X POST http://localhost:9090/-/reload
 ````
 
 ## 8- Jenkins Server'a Node Exporter Kurulumu ve Statik Hedef Oluşturma
 
     1- 
 ````sh
-    sudo useradd --system --no-create-home --shell /bin/false node_exporter
+sudo useradd --system --no-create-home --shell /bin/false node_exporter
 ````
 
     2- Dosyayı indir
@@ -283,19 +283,19 @@ wget https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_e
 ````sh
 tar -xvf node_exporter-1.8.0.linux-amd64.tar.gz
 ````
-    4-
+    4- İlgili yere taşı.
 ````sh
 sudo mv node_exporter-1.8.0.linux-amd64/node_exporter /usr/local/bin/
 ````
-    5-
+    5- Gereksiz dosyaları sil
 ````sh
 rm -rf node_exporter*
 ````
-    6-
+    6- Kurulumu kontrol et.
 ````sh
 node_exporter --version
 ````
-    7-
+    7- Service dosyasını düzenle.
 ````sh
 sudo nano /etc/systemd/system/node_exporter.service
 ````
@@ -333,9 +333,9 @@ sudo systemctl status node_exporter
     sudo nano /etc/prometheus/prometheus.yml 
 
     ```bash
-    - job_name: node_export_jenkins
-        static_configs:
-          - targets: ["jenkins-server-publicIP:9100"]
+- job_name: node_export_jenkins
+    static_configs:
+      - targets: ["jenkins-server-publicIP:9100"]
     ```
 
     Kontrol için:
