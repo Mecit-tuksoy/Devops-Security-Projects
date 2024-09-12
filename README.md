@@ -601,10 +601,13 @@ Bu boru hattında, “jdk ‘jdk17’” ifadesi JDK 17'nin Jenkins sunucusunda 
   1- Jenkins'i Yönet → Eklentiler → Yüklenebilir eklentiler → "OWASP Bağımlılık Kontrolü" yükle
 
   2- Jenkins'i Yönet → Araçlar → Dependency-Check kurulumları → Dependency-Check ekle
-  
+
   "Name" = DP-Check
+
   "Install automatically" = Install from github.com
+
   "Version" = son versionu seçelim
+  
   kaydet
 
 
