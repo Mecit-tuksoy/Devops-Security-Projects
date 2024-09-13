@@ -69,84 +69,82 @@ This project aims to create a secure, scalable, and high-performance streaming p
   <p align="center">Watch Page with customer contol bar</p>
 </div>
 
+# Project stages:
 
-# Proje aşamaları:
+## 1- Create VM instances in Gcloud (Ubuntu 22.04.4 LTS and 20 GB)
+## 2- Set up firewall settings for the instance. Ports we'll need: 8080, 8081, 9000, 9090, 9100
+## 3- On this server:
+    1- Install Jenkins and ensure browser access
+    2- Install Docker
+    3- Create SonarQube Container `docker run -d --name sonar -p 9000:9000 sonarqube:lts-community`
+    4- Install Trivy
 
-## 1- Gcloud'da VM instances oluştur (Ubuntu 22.04.4 LTS  ve  20 GB)
-## 2- İnstance için firewall ayarlarını yap. İhtiyacımız olacak portlar: 8080, 8081, 9000, 9090, 9100
-## 3- Bu server'a:
-    1- Jenkins kurulumunu yap ve brawserdan erişimi sağla
-    2- Docker kurulumu yap
-    3- SonarQube Konteynerini Oluştur sh``docker run -d --name sonar -p 9000:9000 sonarqube:lts-community`` 
-    4- Trivy Kurulumu yap
+## 4- Set up Monitoring Server, we'll create a new VM instance and use it as our monitoring server. (Ubuntu 22.04.4 LTS and 20 GB)
 
-## 4- İzleme Sunucusu Kurulumu yap, yeni bir VM örneği oluşturacağız ve bunu izleme sunucumuz olarak kullanacağız. (Ubuntu 22.04.4 LTS ve 20 GB)
-
-## 5- Prometheus'u İzleme Sunucusuna Kurun bunun için:
-    1-“prometheus” adında bir sistem kullanıcısı oluşturu`yoruz
-  ````sh
-  sudo useradd \ 
-    --system \ 
-    --no-create-home \ 
+## 5- Install Prometheus on the Monitoring Server, for this:
+    1- Create a system user named "prometheus"
+  ```sh
+  sudo useradd \
+    --system \
+    --no-create-home \
     --shell /bin/false prometheus
-  ````  
+  ```  
     2- 
-    - Prometheus dosyasını indir
-````sh
+    - Download Prometheus file
+```sh
 wget https://github.com/prometheus/prometheus/releases/download/v2.51.2/prometheus-2.51.2.linux-amd64.tar.gz
-````
+```
   
-    - Tar dosyasını açıyoruz:
-````sh 
+    - Extract the tar file:
+```sh 
 tar -xvf prometheus-2.51.2.linux-amd64.tar.gz
-````
+```
    
-    - Prometheus verileri ve yapılandırma dosyaları için dizinler oluştur
- ````sh
+    - Create directories for Prometheus data and configuration files
+ ```sh
  sudo mkdir -p /data /etc/prometheus
-````
-    - Prometheus ikili dosyalarını /usr/local/bin/ dizinine taşı 
-````sh 
+```
+    - Move Prometheus binaries to /usr/local/bin/ directory
+```sh 
 cd prometheus-2.51.2.linux-amd64/ 
 sudo mv prometheus promtool /usr/local/bin/
-````
-    - Konsol şablonlarını ve kitaplıklarını /etc/prometheus/ dizinine taşı
-````sh
+```
+    - Move console templates and libraries to /etc/prometheus/ directory
+```sh
 sudo mv consoles/ console_libraries/ /etc/prometheus/
-````
-    - Prometheus yapılandırma dosyasını /etc/prometheus/ dizinine taşı
-````sh
+```
+    - Move Prometheus configuration file to /etc/prometheus/ directory
+```sh
 sudo mv prometheus.yml /etc/prometheus/prometheus.yml
-````
-    - Prometheus yapılandırma ve veri dizinlerinin sahipliğini 'prometheus' kullanıcısına değiştir
-````sh
+```
+    - Change ownership of Prometheus configuration and data directories to 'prometheus' user
+```sh
 sudo chown -R prometheus:prometheus /etc/prometheus/ /data/
-````
-    - Ana dizine geri dön 
-````sh
+```
+    - Return to home directory
+```sh
 cd 
-````
-    - İndirilen Prometheus arşiv dosyasını kaldır 
-````sh
+```
+    - Remove downloaded Prometheus archive file
+```sh
 rm -rf prometheus-2.51.2.linux-amd64.tar.gz
-````
-    - Prometheus sürümünü kontrol et
-````sh
+```
+    - Check Prometheus version
+```sh
 prometheus --version
-````
-    - Prometheus yardımını görüntüle
-````sh
+```
+    - View Prometheus help
+```sh
 prometheus --help
-````
+```
     3-
-    Prometheus için systemd yapılandırması, Prometheus'un Linux sistemlerinde bir hizmet olarak çalışmasını
-    sağlayarak sistem yeniden başlatıldığında veya hizmetin yönetilmesi gerektiğinde otomatik olarak 
-    başlamasını sağlar.
+    Systemd configuration for Prometheus ensures that Prometheus runs as a service on Linux systems,
+    allowing it to start automatically when the system restarts or when the service needs to be managed.
 
-````sh
+```sh
      sudo nano /etc/systemd/system/prometheus.service
-````
-````sh
+```
+```sh
     [Unit]
     Description=Prometheus
     Wants=network-online.target
@@ -171,56 +169,55 @@ prometheus --help
 
     [Install]
     WantedBy=multi-user.target
-````
-````sh
+```
+```sh
     sudo systemctl enable prometheus 
     sudo systemctl start prometheus 
     sudo systemctl status prometheus
-````
+```
 
-## 6- Node Exporter'u İzleme Sunucusuna Kurun bunun için:
-     1- “node_exporter” adında bir sistem kullanıcısı oluşturu`yoruz
-````sh
+## 6- Install Node Exporter on the Monitoring Server, for this:
+     1- Create a system user named "node_exporter"
+```sh
 sudo useradd \
 --system \
 --no-create-home \
 --shell /bin/false node_exporter
-````
+```
      2- 
-    - Node Exporter dosyasını indir
-````sh
+    - Download Node Exporter file
+```sh
 wget https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_exporter-1.8.0.linux-amd64.tar.gz
-````  
-    - Tar dosyasını açıyoruz:
-````sh
+```  
+    - Extract the tar file:
+```sh
 tar -xvf node_exporter-1.8.0.linux-amd64.tar.gz
-````   
-    - Node Exporter dosyasını /usr/local/bin/ dizinine taşı 
-````sh
+```   
+    - Move Node Exporter file to /usr/local/bin/ directory
+```sh
 sudo mv node_exporter-1.8.0.linux-amd64/node_exporter /usr/local/bin/
-````
-    - İndirilen Node Exporter arşiv dosyasını kaldır 
-````sh
+```
+    - Remove downloaded Node Exporter archive file
+```sh
 rm -rf node_exporter*
-````
-    - Node Exporter sürümünü kontrol et
-````sh
+```
+    - Check Node Exporter version
+```sh
 node_exporter --version
-````
-    - Node Exporter yardımını görüntüle
-````sh
+```
+    - View Node Exporter help
+```sh
 node_exporter --help
-````
+```
 
 3-
-Node Exporter için systemd yapılandırması, Node Exporter'un Linux sistemlerinde bir hizmet olarak çalışmasını sağlayarak sistem yeniden başlatıldığında veya hizmetin yönetilmesi gerektiğinde otomatik olarak başlamasını sağlar.
+Systemd configuration for Node Exporter ensures that Node Exporter runs as a service on Linux systems, allowing it to start automatically when the system restarts or when the service needs to be managed.
 
-````sh
+```sh
 sudo nano /etc/systemd/system/node_exporter.service
-````
+```
 
-````sh
-
+```sh
     [Unit]
     Description=Node Exporter
     Wants=network-online.target
@@ -240,66 +237,66 @@ sudo nano /etc/systemd/system/node_exporter.service
 
     [Install]
     WantedBy=multi-user.target
-````
+```
 
-````sh
+```sh
 sudo systemctl enable node_exporter
 sudo systemctl start node_exporter
 sudo systemctl status node_exporter
-````
+```
 
-## 7- Prometheus için Statik Hedef Oluşturma
+## 7- Creating Static Target for Prometheus
     
-    1- prometheus.yml konfigürasyon dosyasını açıyoruz.
-````sh
+    1- Open the prometheus.yml configuration file.
+```sh
 sudo nano /etc/prometheus/prometheus.yml
-````
+```
 
-    2- prometheus.yml dosyasının en altına bunu yapıştır:
-````sh
+    2- Paste this at the bottom of the prometheus.yml file:
+```sh
     - job_name: node_export
       static_configs:
         - targets: ["localhost:9100"]
-````
+```
 
-    3- Kontrol için:
-````sh
+    3- To check:
+```sh
 promtool check config /etc/prometheus/prometheus.yml
 curl -X POST http://localhost:9090/-/reload
-````
+```
 
-## 8- Jenkins Server'a Node Exporter Kurulumu ve Statik Hedef Oluşturma
+## 8- Installing Node Exporter on Jenkins Server and Creating Static Target
 
     1- 
-````sh
+```sh
 sudo useradd --system --no-create-home --shell /bin/false node_exporter
-````
+```
 
-    2- Dosyayı indir
-````sh
+    2- Download the file
+```sh
 wget https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_exporter-1.8.0.linux-amd64.tar.gz 
-````
-    3- Arşiv dosyasını çıkar
-````sh
+```
+    3- Extract the archive file
+```sh
 tar -xvf node_exporter-1.8.0.linux-amd64.tar.gz
-````
-    4- İlgili yere taşı.
-````sh
+```
+    4- Move to the relevant location.
+```sh
 sudo mv node_exporter-1.8.0.linux-amd64/node_exporter /usr/local/bin/
-````
-    5- Gereksiz dosyaları sil
-````sh
+```
+    5- Delete unnecessary files
+```sh
 rm -rf node_exporter*
-````
-    6- Kurulumu kontrol et.
-````sh
+```
+    6- Check the installation.
+```sh
 node_exporter --version
-````
-    7- Service dosyasını düzenle.
-````sh
+```
+    7- Edit the service file.
+```sh
 sudo nano /etc/systemd/system/node_exporter.service
-````
-````sh
+```
+```sh
 # node_exporter.service configurations file
         [Unit]
         Description=Node Exporter
@@ -320,382 +317,226 @@ sudo nano /etc/systemd/system/node_exporter.service
 
         [Install]
         WantedBy=multi-user.target
-````
-````sh
+```
+```sh
 # start and enable node_exporter
 sudo systemctl enable node_exporter
 sudo systemctl start node_exporter
 sudo systemctl status node_exporter
-````
+```
 
-## 9- Monitoring server'da prometheus.yml configürasyon dosyasına jenkins serverı hedef olarak ekliyoruz: 
-    
-````sh
-sudo nano /etc/prometheus/prometheus.yml 
-````
+## 9- Adding the Jenkins server as a target in the prometheus.yml configuration file on the monitoring server:
 
-````sh
+```sh
+sudo nano /etc/prometheus/prometheus.yml
+```
+
+```sh
 - job_name: node_export_jenkins
     static_configs:
       - targets: ["jenkins-server-publicIP:9100"]
-````
+```
 
-    Kontrol için:
-````sh
+To check:
+```sh
 promtool check config /etc/prometheus/prometheus.yml
-curl -X POST http://localhost:9090/-/reload 
-````
+curl -X POST http://localhost:9090/-/reload
+```
 
-## 10- Monitörig serverda Grafana Kurulumu ve Yapılandırması:
+## 10- Grafana Installation and Configuration on the Monitoring Server:
 
-    1- Install necessary packages for adding Grafana repository
-````sh
+1- Install necessary packages for adding Grafana repository
+```sh
 sudo apt-get install -y apt-transport-https software-properties-common
-````
-    2- Add Grafana GPG key to verify package integrity
-````sh
+```
+
+2- Add Grafana GPG key to verify package integrity
+```sh
 wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
-````
-    3- Add Grafana repository to APT sources
-````sh
+```
+
+3- Add Grafana repository to APT sources
+```sh
 echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
-````
-    4- Update package lists to include Grafana packages
-````sh
+```
+
+4- Update package lists to include Grafana packages
+```sh
 sudo apt-get update
-````
-    5- Install Grafana
-````sh
+```
+
+5- Install Grafana
+```sh
 sudo apt-get -y install grafana
-````
-    6- Enable Grafana service to start on boot
-````sh
+```
+
+6- Enable Grafana service to start on boot
+```sh
 sudo systemctl enable grafana-server
-````
-    7- Start Grafana service
-````sh
+```
+
+7- Start Grafana service
+```sh
 sudo systemctl start grafana-server
-````
-    8- Check status of Grafana service
-````sh
+```
+
+8- Check status of Grafana service
+```sh
 sudo systemctl status grafana-server
-````
-    9- Kurulu başarılı olduktan sonra monitöring serverin public ipsi ile 3000 portundan Grafana'ya giriş yapıyoruz 
+```
 
-    10- Kullanıcı adı ve şifre "admin" olarak devam edip yeni şifre belirliyoruz.
+9- After successful installation, access Grafana via the monitoring server's public IP on port 3000
 
-    11- "Data Sources" olarak Prometheus seçiyoruz. Buraya monitöring serverın public ipsini ekliyoruz.
+10- Continue with the username and password as "admin" and set a new password.
 
-    12- Dashboarts kısmından güzel bir dashbort import ediyoruz. Ben "1860" kullandım.
+11- Select Prometheus as "Data Sources". Add the monitoring server's public IP here.
 
-
-## 11- Prometheus Eklentisinin Jenkins'e Kurulumu ve Entegrasyonu:
-
-    1- Jenkins_server_public_ip :8080 ile jenkinse bağlan
-    
-    2- “Jenkins’i Yönet” → “Eklentileri Yönet” → “Kullanılabilir Eklentiler”e gidin.
-
-    3- Burada arama çubuğuna "prometheus" yaz. ilk çıkan eklentiyi indir.
-
-    4- Jenkin'i yeniden başlat.
-
-    5- http://Jenkins_server_public_ip:8080/prometheus   adresinden JSON formatında metrikler görebiliyorsanız, endpoint çalışıyor demektir. Eğer çalışmıyorsa, Jenkins'teki eklentiyi kontrol edin.
+12- Import a nice dashboard from the Dashboards section. I used "1860".
 
 
-## 12- Monitöring serverda prometheus.yml konfigürasyon dosyasına jenkinsi ekle
+## 11- Installation and Integration of Prometheus Plugin to Jenkins:
 
-    1- sudo nano /etc/prometheus/prometheus.yml
+1- Connect to Jenkins via jenkins_server_public_ip:8080
 
-    2-
-````sh 
+2- Go to "Manage Jenkins" → "Manage Plugins" → "Available Plugins".
+
+3- In the search bar, type "prometheus". Download the first plugin that appears.
+
+4- Restart Jenkins.
+
+5- If you can see metrics in JSON format at http://Jenkins_server_public_ip:8080/prometheus, the endpoint is working. If not, check the plugin in Jenkins.
+ 
+
+## 12- Add Jenkins to the prometheus.yml configuration file on the monitoring server
+
+1- sudo nano /etc/prometheus/prometheus.yml
+
+2-
+```sh 
     - job_name: jenkins
       metrics_path: "/prometheus"
       static_configs:
         - targets: ["<jenkins-ip>:8080"]
-````
-    3- Kontrol için:
-````sh
+```
+
+3- To check:
+```sh
 promtool check config /etc/prometheus/prometheus.yml
 curl -X POST http://localhost:9090/-/reload
+```
+
+## 13- Setting up Email Integration with Jenkins and Installing the Plugin
+
+1- Here, we need to get an app password from our Gmail account to be able to send emails.
+   Let's go to our Gmail account and generate the password.
+   Two-factor authentication needs to be enabled for these operations.
+   After doing this, go to "app passwords". Set a name like "jenkins" and click create.
+   Save the generated password.
+
+2- Enter Jenkins and go to Manage Jenkins > System > E-mail Notification.
+   Let's fill in the following sections:
+
+   SMTP server
+    "smtp.gmail.com"
+   Use SMTP Authentication?
+    Username
+    "mecit.tuksoy@gmail.com"
+    Password
+    "enter the password we saved"
+   Check the "Use SSL" box
+   SMTP Port?
+    "465"
+   You can send a test email by filling in the bottom section if you want.
+
+3- We add our email and passwords as credentials for Jenkinsfile usage.
+
+   Go to "Manage Jenkins" → "Credentials" and add your email username and the generated password.
+   Kind
+    "Username with password"
+   Username
+    "mecit.tuksoy@gmail.com"
+   ID
+    "mail"
+   Create.
+
+4- Manage Jenkins > System > Extended E-mail Notification
+
+   SMTP server
+    "smtp.gmail.com"
+   SMTP Port
+    "465"
+   Credentials
+    "mecit.tuksoy@gmail.com/****** (mail)"
+    "Use SSL"
+   Default Content Type
+    "HTML (text/html)"
+   Default Triggers
+     "Always" and "failure- Any"
+   Save
+
+## 14- Creating Jenkins Job
+
+1- Click "New Item", enter the name "Netflix", check "Pipeline" and click "OK".
+   Click on "Pipeline" and paste the following post block into the "script" section and save.
+````sh
+    post {
+        always {
+            emailext attachLog: true,
+                subject: "'${currentBuild.result}'",
+                body: "Project: ${env.JOB_NAME}<br/>" +
+                    "Build Number: ${env.BUILD_NUMBER}<br/>" +
+                    "URL: ${env.BUILD_URL}<br/>",
+                to: 'mecit.tuksoy@gmail.com@gmail.com',  #change Your mail
+                attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
+            }
+        }
 ````
 
-## 13- Jenkins ile E-posta Entegrasyonunu Ayarlama ve Eklentiyi Yükleme
+## 15- Configuring Sonar Server in Manage Jenkins
 
-    1- Burada, e-posta gönderebilmek için Gmail hesabımızdan bir uygulama şifresi almamız gerekiyor. 
-    Gmail hesabımıza gidelim ve şifreyi üretelim.
-    Bu işlemlerin yapılabilmesi için iki adımlı doğrulamanın etkinleştirilmesi gerekmektedir.
-    Bu işlemi yaptıktn sonra "uygulama şifreleri"ne gidin. Bir ad belirleyin "jenkins" ve oluştur deyin.
-    Gelen şifreyi kaydedin.
+1- Let's access the Sonarqube we installed with Container from the browser with "public_ip:9000"
 
-    2- Jenkinse girerek Jenkins'i Yönet > Sistem > E-posta Bilgilendirmesi  bölümüne geliyoruz.
-    Aşağıdaki bölümleri dolduralım.
+2- Go to Administration > security > Users > Update Token, give it a name like "jenkins", select a day and click "Generate".
 
-       SMTP sunucusu
-        "smtp.gmail.com"
-       Use SMTP Authentication?
-        Kullanıcı adı
-        "mecit.tuksoy@gmail.com"
-        şifre
-        "kaydettiğimiz şifreyi girelim"
-        SSL kullan  kısmına tik koyuyoruz.
-        SMTP Portu?
-         "465"
-        İsterseniz en alttaki kısmı doldurarak test maili atabilirsiniz.
-    
-    3- Jenkinsfile kullanımı için kimlik bilgileri olarak e-postamızı ve şifrelerimizi ekliyoruz.
+3- To save the generated token in Jenkins:
+   Go to "Manage Jenkins → Credentials → System → Global Credentials → Add Credentials → Secret Text"
+   Paste the token in the "Secret" field
+   Give a name like "Sonar-token" in the "ID" field. Click "Create".
 
-       “Jenkins'i Yönet” → “Kimlik Bilgileri”ne gidin ve e-posta kullanıcı adınızı ve oluşturulan parolayı ekleyin. 
-       Kind
-        "Username with password"
-       Username
-        "mecit.tuksoy@gmail.com"
-       ID
-        "mail"
-       oluştur.
-    
-    4- Jenkins'i Yönet > Sistem > Extended E-mail Notification
+4- To install the "SonarQube Scanner" plugin in Jenkins:
+   Go to "Manage Jenkins → Plugins → Available plugins → search for "SonarQube Scanner" and install the plugin.
 
-       SMTP server
-        "smtp.gmail.com"
-       SMTP Port
-        "465"
-       Credentials
-        "mecit.tuksoy@gmail.com/****** (mail)"
-        "Use SSL"
-       Default Content Type
-        "HTML (text/html)"
-       Default Triggers
-         "Always" ve "failure- Any"
-       Kaydet
-
-
-## 14- Jenkins İşi ​​Oluşturma
-
-    1- "Yeni Öğe" tıkla isim "Netfilix" gir "Pipeline" işaretle ve "Tamam" tıkla.
-       "Pipeline" tıklayarak "script" kısmına aşağıdaki post bloğunu yapıştırın ve kaydedin.
-
-        post {
-            always {
-                emailext attachLog: true,
-                    subject: "'${currentBuild.result}'",
-                    body: "Project: ${env.JOB_NAME}<br/>" +
-                        "Build Number: ${env.BUILD_NUMBER}<br/>" +
-                        "URL: ${env.BUILD_URL}<br/>",
-                    to: 'mecit.tuksoy@gmail.com@gmail.com',  #change Your mail
-                    attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
-                }
-            }
-
-
-
-## 15- Manage Jenkins'te Sonar Sunucusunu Yapılandırma
-
-   1- Container ile kurduğumuz Sonarqube'e tarayıcıdan "public_ip:9000" ile girelim
-   
-   2- Administration > security > Users > Update Token yaptıktan sonra buraya bir isim veriyorum "jenkin" gibi gün seçip "Generate" tıkla. 
-
-   3- Oluşan tokenı kaydetmek için jenkinsde: 
-   "Manage Jenkins → Credentials → System → Global Credentials → Add Credentials → Secret Text'e" git
-   "Secret" kısmına tokenı yapıştır
-   "ID" kısmına "Sonar-token" gibi bir isim ver. "Create" tıkla.
-
-   4- Jenkins’e "SonarQube Scanner" eklentisini yüklemek için:
-   "Manage Jenkins → Eklentiler → Yüklenebilecek eklentiler → arama çubuğuna "SonarQube Scanner" yaz ve eklentiyi yükle.
-
-   5- "Manage Jenkins → System → SonarQube server → Add SonarQube "
+5- "Manage Jenkins → System → SonarQube server → Add SonarQube "
    "Name" = sonar-server
    "Server URL" = SonarQube-public-ip:9000
    "Server authentication token" = Sonar-token
-   kaydet
+   Save
 
-   5- "Manage Jenkins → Tool → SonarQube Scanner kurulumları → 
+6- "Manage Jenkins → Tool → SonarQube Scanner installations → 
    "Name" = sonar-scanner
    "Version" = 5.0.1.3006
-   kaydet
+   Save
 
-   6- Tarayıcımızdaki SonarQube' gidip 
-   Administration > Cofiguration > Webhooks > Create >
+7- Go to SonarQube in your browser
+   Administration > Configuration > Webhooks > Create >
    "Name" = jenkins
    "URL" = http://jenkins-server-ip:8080/sonarqube-webhook/
-   create
+   Create
+
+Before running the pipeline, we need to check our Node and JVM versions. We should configure these as required by the Jenkinsfile.
+
+In this pipeline, the statement "jdk 'jdk17'" indicates that JDK 17 is installed on the Jenkins server and the pipeline will use this JDK version. Similarly, the statement "nodejs 'node16'" indicates that Node.js version 16 is installed on the Jenkins server and the pipeline will use this version.
+
+>>> Let's install the "NodeJS" plugin from the available plugins section in Jenkins
+
+>>> Let's add "NodeJS 16.20.2" from the tools section in Jenkins
+
+>>> Let's add "JDK" from the tools section in Jenkins. Let's give this path on the jenkins server to the JAVA_HOME variable "/usr/lib/jvm/java-17-openjdk-amd64" and save it.
 
 
-Boru hattını çalıştırmadan önce, Node ve JVM sürümlerimizi kontrol etmemiz gerekir. Bunları Jenkinsfile'ın gerektirdiği şekilde yapılandırmalıyız.
+## 16- Creating a Jenkins Pipeline
 
-Bu boru hattında, “jdk ‘jdk17’” ifadesi JDK 17'nin Jenkins sunucusunda yüklü olduğunu ve boru hattının bu JDK sürümünü kullanacağını gösterir. Benzer şekilde, “nodejs ‘node16’” ifadesi, Jenkins sunucusunda Node.js sürüm 16'nın yüklü olduğunu ve boru hattının bu sürümü kullanacağını gösterir.
-
-
->>> Jenkinsde yüklenebilecek eklentiler bölümünden "NodeJS" eklentisini yükleyelim
-
->>> Jenkinsde araçlar bölümünden "NodeJS 16.20.2" ekleyelim 
-
->>> Jenkinsde araçlar bölümünden "JDK" ekleyelim. buraya JAVA_HOME değişkenine jenkins serverdaki bu yolu verelim "/usr/lib/jvm/java-17-openjdk-amd64" ve kaydedelim.
-
-
-## 15- Jenkins pipeline oluşturma
-
-  >>> "Netfilix" pipelineı seçelim "Configure" tıklayalım. Aşağıdaki pipeline yapıştıralım:
-````sh
-  pipeline{
-    agent any
-    tools{
-        jdk 'jdk17'
-        nodejs 'node16'
-    }
-    environment {
-        SCANNER_HOME=tool 'sonar-scanner'
-    }
-    stages {
-        stage('clean workspace'){
-            steps{
-                cleanWs()
-            }
-        }
-        stage('Checkout from Git'){
-            steps{
-                git branch: 'main', url: 'https://github.com/Mecit-tuksoy/Devops-Security-Projects.git'
-            }
-        }
-        stage("Sonarqube Analysis "){
-            steps{
-                withSonarQubeEnv('sonar-server') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Netflix \
-                    -Dsonar.projectKey=Netflix '''
-                }
-            }
-        }
-        stage("quality gate"){
-           steps {
-                script {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token' 
-                }
-            } 
-        }
-        stage('Install Dependencies') {
-            steps {
-                sh "npm install"
-            }
-        }
-    }
-    post {
-     always {
-        emailext attachLog: true,
-            subject: "'${currentBuild.result}'",
-            body: "Project: ${env.JOB_NAME}<br/>" +
-                "Build Number: ${env.BUILD_NUMBER}<br/>" +
-                "URL: ${env.BUILD_URL}<br/>",
-            to: 'mecit.tuksoy@gmail.com',
-            attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
-        }
-    }
-}
-````
-
-
->>> Bu işlem hattı, bir Java projesi için GitHub deposundan kod alır, bağımlılıkları yükler, SonarQube analizini gerçekleştirir, SonarQube kalite kapısı kontrolü yapar. Kalite kapısı kriterlerini karşılayıp karşılamadığına göre pipeline'ın devam edip etmeyeceğine karar verir ve son olarak bir e-posta bildirimi gönderir.
-
->>> "Build Now" tıklayıp pipelineı takip edebiliriz. Başarılı mesajı maile gelecektir.
-
-## 16- OWASP Bağımlılık Kontrol Eklentilerini Yükleyin
-
-  1- Jenkins'i Yönet → Eklentiler → Yüklenebilir eklentiler → "OWASP Bağımlılık Kontrolü" yükle
-
-  2- Jenkins'i Yönet → Araçlar → Dependency-Check kurulumları → Dependency-Check ekle
-
-  "Name" = DP-Check
-
-  "Install automatically" = Install from github.com
-
-  "Version" = son versionu seçelim
-
-  kaydet
-
-
->>> Pipelinea giderek configure edip pipelinea aşağıdaki adımı ekliyoruz:
- 
-````sh
-        stage('OWASP FS SCAN') {
-            steps {
-                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-            }
-        }
-        stage('TRIVY FS SCAN') {
-            steps {
-                sh "trivy fs . > trivyfs.txt"
-            }
-        }
-````
-Bu iki aşama, projenin güvenlik taramalarını gerçekleştirerek, hem bağımlılık seviyesinde (OWASP Dependency-Check) hem de dosya sistemi seviyesinde (Trivy) güvenlik açıklarını tespit eder. Elde edilen raporlar, pipeline'ın devamında değerlendirilebilir ya da inceleme için saklanabilir. 
-
-## 17- Docker Görüntülerini Oluşturma, Gönderme ve Dağıtma
-
-  1- Bu adıma başlamadan önce uygulamamızın çalışması için bir API anahtarı edinmemiz gerekiyor. https://www.themoviedb.org/ web sitesine kayıt olalım ve bir API anahtarı oluşturalım.
-
-  2- ayarlar > API > oluştur > Developer > kabul et > ilgili yerleri doldurup API anahtarını alıyorum.
-
-  3- jenkins kullanıcısına geçip manual olarak uygulamayı test etmek için:
-
-  ````sh
-  sudo su - jenkins 
-  cd /workspace/Netflix/ 
-  ls 
-  cat Dockerfile
-  ````
-  ````sh
-  docker build --build-arg TMDB_V3_API_KEY=<API_anahtarınızı_buraya_kaydedin> -t netflix-clone .
-  ````
-
-  ````sh
-  docker run --name netflix-clone-website --rm -d -p 8081:80 netflix-clone
-  ````
-  
-  >>>> public-ip:8081 ile uygulamayı görebiliriz. 
-
-  4- Uygulama başarılı bir şekilde çalıştığını gördüğümüze göre şimdi image ve containerı silebilriz.
-  ````sh
-  docker rm -f netflix-clone-website 
-  docker rmi netflix-clone
-  ````
-
-
-
-## 18- Jenkins ayarlarına devam:
-
-  1- Jenkinsi yönet > Eklentiler > Yüklenebilir eklentiler: aşağıdakileri yükleyelim.
-
-    Docker
-    Docker Commons
-    Docker Pipeline
-    Docker API
-    docker-build-step
-   
-   2- Jenkins'i Yönet > Araçlar > Docker kurulumları
-
-   "Name"= docker
-
-   "Install automatically"
-
-   Download from docker.com
-
-   "Docker version" = latest
-
-   kaydet
-
-   3- Jenkins'i Yönet > Credentials > System > Global credentials (unrestricted)
-
-   Kind = Username with password
-
-   Username = dockerhub kullanıcı adınızı girin
-
-   Password = dockerhub tokenınızı girin
-
-   ID = bir isim verin "docker" benimki pipelineda kullanacağız
-   
-   create
-
-   4- Jenkins'de Netfilix pipelinea aşağıdaki kodları yapıştırıyoruz. 
-
+>>> Select the "Netfilix" pipeline and click "Configure." Paste the following pipeline:
 ````sh
 pipeline{
     agent any
@@ -737,6 +578,158 @@ pipeline{
                 sh "npm install"
             }
         }
+    }
+    post {
+     always {
+        emailext attachLog: true,
+            subject: "'${currentBuild.result}'",
+            body: "Project: ${env.JOB_NAME}<br/>" +
+                "Build Number: ${env.BUILD_NUMBER}<br/>" +
+                "URL: ${env.BUILD_URL}<br/>",
+            to: 'mecit.tuksoy@gmail.com',
+            attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
+        }
+    }
+}
+````
+
+>>> This pipeline fetches the code from a GitHub repository for a Java project, installs dependencies, performs a SonarQube analysis, and checks the SonarQube quality gate. It decides whether to continue the pipeline based on whether the quality gate criteria are met and finally sends an email notification.
+
+>>> Click "Build Now" to run the pipeline. A success message will be sent to your email.
+
+
+## 17- Install OWASP Dependency Check Plugins
+
+1- Manage Jenkins → Plugins → Available Plugins → Install "OWASP Dependency Check."
+
+2- Manage Jenkins → Global Tool Configuration → Dependency-Check Installations → Add Dependency-Check.
+
+"Name" = DP-Check
+
+"Install automatically" = Install from github.com
+
+"Version" = Select the latest version
+
+Save.
+
+>>> Go to the pipeline configuration and add the following step:
+
+````sh
+stage('OWASP FS SCAN') {
+    steps {
+        dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+        dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+    }
+}
+stage('TRIVY FS SCAN') {
+    steps {
+        sh "trivy fs . > trivyfs.txt"
+    }
+}
+````
+
+These two stages perform security scans for the project, identifying vulnerabilities at both the dependency level (OWASP Dependency-Check) and the file system level (Trivy). The resulting reports can be evaluated later in the pipeline or stored for review.
+
+
+#!/bin/bash
+
+## 18- Building, Pushing, and Deploying Docker Images
+
+  1- Before starting this step, we need to obtain an API key for our application to work.
+  Let's register at https://www.themoviedb.org/ and create an API key.
+
+  2- Settings > API > Create > Developer > Accept > Fill in the required fields and obtain your API key.
+
+  3- Switch to the Jenkins user and manually test the application:
+
+````sh 
+sudo su - jenkins 
+cd /workspace/Netflix/ 
+ls 
+cat Dockerfile
+````
+````sh
+docker build --build-arg TMDB_V3_API_KEY=<insert_your_API_key_here> -t netflix-clone .
+````
+````sh
+docker run --name netflix-clone-website --rm -d -p 8081:80 netflix-clone
+````
+>>> Access the application at public-ip:8081 to verify it's running successfully.
+
+  4- Once we've confirmed that the application is running successfully, we can delete the image and container.
+````sh
+docker rm -f netflix-clone-website 
+docker rmi netflix-clone
+````
+
+
+## 19- Continue with Jenkins settings:
+
+  1- Manage Jenkins > Plugins > Available Plugins: Let's install the following plugins.
+     - Docker
+     - Docker Commons
+     - Docker Pipeline
+     - Docker API
+     - docker-build-step
+
+  2- Manage Jenkins > Global Tool Configuration > Docker Installations:
+
+     - Name: docker
+     - Install automatically
+     - Download from docker.com
+     - Docker version: latest
+     - Save
+
+  3- Manage Jenkins > Credentials > System > Global credentials (unrestricted):
+     - Kind: Username with password
+     - Username: Enter your Docker Hub username
+     - Password: Enter your Docker Hub token
+     - ID: Provide a name like "docker," which we'll use in the pipeline
+     - Create
+
+  4- In Jenkins, paste the following code into the Netfilix pipeline:
+
+````sh
+pipeline {
+    agent any
+    tools {
+        jdk 'jdk17'
+        nodejs 'node16'
+    }
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+    }
+    stages {
+        stage('clean workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('Checkout from Git') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Mecit-tuksoy/Devops-Security-Projects.git'
+            }
+        }
+        stage("Sonarqube Analysis ") {
+            steps {
+                withSonarQubeEnv('sonar-server') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Netflix \
+                    -Dsonar.projectKey=Netflix '''
+                }
+            }
+        }
+        stage("quality gate") {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token' 
+                }
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                sh "npm install"
+            }
+        }
         // stage('OWASP FS SCAN') {
         //     steps {
         //         dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
@@ -748,19 +741,19 @@ pipeline{
                 sh "trivy fs . > trivyfs.txt"
             }
         }
-        stage("Docker Build & Push"){
-            steps{
-                script{
-                   withDockerRegistry(credentialsId: 'docker', toolName: 'docker'){   
-                       sh "docker build --build-arg TMDB_V3_API_KEY=<write_your_TMDB_api_key> -t netflix ."
-                       sh "docker tag netflix mecit35/netflix:latest "
-                       sh "docker push mecit35/netflix:latest "
+        stage("Docker Build & Push") {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {   
+                        sh "docker build --build-arg TMDB_V3_API_KEY=<write_your_TMDB_api_key> -t netflix ."
+                        sh "docker tag netflix mecit35/netflix:latest "
+                        sh "docker push mecit35/netflix:latest "
                     }
                 }
             }
         }
-        stage('Deploy to container'){
-            steps{
+        stage('Deploy to container') {
+            steps {
                 sh 'docker rm -f netflix || true'
                 sh 'docker run -d --name netflix -p 8081:80 mecit35/netflix:latest'
             }
@@ -777,39 +770,39 @@ pipeline{
                 }
             }
         }
-        stage("TRIVY"){
-            steps{
+        stage("TRIVY") {
+            steps {
                 sh "trivy image mecit35/netflix:latest > trivyimage.txt" 
             }
         }
     }
     post {
-     always {
-        emailext attachLog: true,
-            subject: "'${currentBuild.result}'",
-            body: "Project: ${env.JOB_NAME}<br/>" +
-                "Build Number: ${env.BUILD_NUMBER}<br/>" +
-                "URL: ${env.BUILD_URL}<br/>",
-            to: 'mecit.tuksoy@gmail.com',
-            attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
+        always {
+            emailext attachLog: true,
+                subject: "'${currentBuild.result}'",
+                body: "Project: ${env.JOB_NAME}<br/>" +
+                    "Build Number: ${env.BUILD_NUMBER}<br/>" +
+                    "URL: ${env.BUILD_URL}<br/>",
+                to: 'mecit.tuksoy@gmail.com',
+                attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
         }
     }
 }
 ````
 
-Bu pipeline; Docker imajı oluşturma, etiketleme, Docker Hub'a push etme, container'da çalıştırma, uygulama durumunu kontrol etme ve Docker imajı için Trivy taraması yapmayı içerir. 
-OWASP Dependency-Check taraması ve rapor oluşturma adımı uzun sürdüğü ve bir önceki pipelineda gösterildiği için bu aşamada yorum haline getirilmiştir.
+This pipeline includes building a Docker image, tagging it, pushing it to Docker Hub, running it in a container, checking the application's status, and performing a Trivy scan on the Docker image. 
+The OWASP Dependency-Check scan and report generation step has been commented out as it was demonstrated in the previous pipeline and can take a long time.
 
-## 19- Kubernetes Kurulumu
 
-   1- 2 tane Ubuntu 20.04 LTS imajı ve e2-medium türünde sanal makine oluşturuyoruz. Master ve worker.
+## 20- Kubernetes Setup
 
-   2- Master makineye bağlanarak aşağıdaki betiği içeren "bir master.sh" dosyası oluşturuyoruz. İzinlerini ayarlayıp çalıştırıyoruz.
+1- Create two Ubuntu 20.04 LTS images and e2-medium type virtual machines. One as the master and the other as the worker.
+
+2- Log into the master machine and create a "master.sh" file with the following script. Set the permissions and run it.
 
 ````sh
 sudo nano master.sh
 ````
-
 ````sh
 #!/bin/bash
 # APT update
@@ -873,16 +866,14 @@ sudo systemctl restart containerd
 # Checking the status of Containerd
 echo "Installation completed!"
 ````
+This script includes all the steps required for Kubernetes and Docker installation and ensures that the system is ready to run Kubernetes cluster. Also, necessary kernel settings are made and containerd container runtime is configured.
 
-Bu script, Kubernetes ve Docker kurulumu için gereken tüm adımları içerir ve sistemin Kubernetes cluster'ı çalıştırmaya hazır hale getirilmesini sağlar. Ayrıca, gerekli kernel ayarları yapılır ve containerd container runtime yapılandırılır.
-   
 ````sh
 sudo chmod +x master.sh 
 bash master.sh
 ````
 
-   3- Kubernetes kümesinin ana makinemizde çalışabilmesi için gerekli temel bileşenleri kuralım.
-
+3- Install the essential components for the Kubernetes cluster on the master machine.
 ````sh
 sudo nano kubernetes.sh
 ````
@@ -915,20 +906,18 @@ sudo -i -u $USER kubectl patch storageclass local-path -p '{"metadata": {"annota
 
 echo "Kubernetes cluster setup complete!"
 ````
-Bu script, Flannel ağ eklentisini ve yerel depolama sınıfını (Local Path Provisioner) ayarlayarak, cluster'ın tam olarak çalışır duruma gelmesini sağlar. 
+This script sets the Flannel network plugin and the local storage class (Local Path Provisioner) so that the cluster is fully operational.
 
+Set permissions and execute the script
 ````sh
 sudo chmod +x kubernetes.sh 
 bash kubernetes.sh 
 kubectl get no
 ````
-
-   4- Şimdi workera bağlanalım ve kuruluma devam edelim. Workerda gerekli bileşenleri kurmak için masterda yaptığımıza benzer adımları takip edeceğiz.
-
+4- Now, connect to the worker node and continue the installation. Follow similar steps to the master node for setting up the necessary components.
 ````sh
 sudo nano worker.sh
 ````
-
 ````sh
 #!/bin/bash
 # APT update
@@ -993,35 +982,32 @@ sudo systemctl restart containerd
 echo "Installation completed!"
 ````
 
+Set permissions and execute the script
 ````sh
 sudo chmod +x worker.sh 
 ./worker.sh
 ````
 
-   5- Kubernetes work node'unu master'a bağlayalım. Eğer ek work node'lar oluşturursak, 
-   bu şekilde master ile bağlantılarını sağlayabiliriz. Gerekli birleştirme komutunu almak için 
-   master node ta aşağıdaki komutu çalıştıralım:
+5- Join the Kubernetes worker node to the master. If you create additional worker nodes, you can connect them to the master in this way. Run the following command on the master node to get the join command:
 
 ````sh
 sudo kubeadm token create --print-join-command
 ````
->>> Gelen çıktıyı worker node a yapıştırıyoruz aşağıdaki gibi bir şey:
+Copy the output and paste it into the worker node terminal, like this:
 
 ````sh
 sudo kubeadm join 10.182.0.5:6443 --token u4rdkh.hz16x9z9lqy5ysrg --discovery-token-ca-cert-hash sha256:dd41f62822bc8b897d4a843eb4be1daf4426570318f9a28c827d88fcb4d7738b
 ````
+>>> Finally, check if the worker node is connected by running the following command on the master node:
+````sh kubectl get no````
 
->>> master node ta ````sh kubectl get no```` komutu ile worker node u görebiliriz.
-
-## 20- Metriklerini izlemek için hem ana hem de çalışan düğümlere Node Exporter'ı yükleyelim 
-
+## 21- Install Node Exporter on both master and worker nodes to monitor metrics 
 ````sh
 sudo useradd \
 --system \
 --no-create-home \
 --shell /bin/false node_exporter
 ````
-
 ````sh
 wget https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_exporter-1.8.0.linux-amd64.tar.gz 
 tar -xvf node_exporter-1.8.0.linux-amd64.tar.gz 
@@ -1029,11 +1015,9 @@ sudo mv node_exporter-1.8.0.linux-amd64/node_exporter /usr/local/bin/
 rm -rf node_exporter* 
 node_exporter --version
 ````
-
 ````sh
 sudo nano /etc/systemd/system/node_exporter.service
 ````
-
 ````sh
 [Unit]
 Description=Node Exporter
@@ -1055,20 +1039,17 @@ ExecStart=/usr/local/bin/node_exporter \
 [Install]
 WantedBy=multi-user.target
 ````
-
 ````sh
 sudo systemctl enable node_exporter
 sudo systemctl start node_exporter
 sudo systemctl status node_exporter
 ````
-
->>> Monitoring servera bağlanarak prometheus.yml konfigürasyon dosyasını ekleme yapıyoruz
-
+>>> Connect to the monitoring server and add configuration to the prometheus.yml file
 ````sh
 sudo nano /etc/prometheus/prometheus.yml 
 ````
-
-```bash
+Add the following configurations:
+````sh
 - job_name: master
     static_configs:
       - targets: ["master_public_ip:9100"]
@@ -1076,21 +1057,19 @@ sudo nano /etc/prometheus/prometheus.yml
 - job_name: worker
     static_configs:
       - targets: ["worker_public_ip:9100"]
-```
+````
 ````sh
 promtool check config /etc/prometheus/prometheus.yml
 curl -X POST http://localhost:9090/-/reload
 ````
 
-## 21- Jenkins sunucusuna kubectl kurulumu:
+## 22- Install kubectl on the Jenkins server:
 
-   1- Bu aşamada Jenkins ile Kubernetes kümemiz arasında bir bağlantı kurmamız gerekiyor.
-   Jenkins'in Kubernetes kümesini yönetebilmesi için Jenkins sunucusuna kubectl yüklememiz gerekiyor.
-
+1- At this stage, we need to establish a connection between Jenkins and our Kubernetes cluster.
+We need to install kubectl on the Jenkins server so that Jenkins can manage the Kubernetes cluster.
 ````sh
 sudo nano kube.sh
 ````
-   
 ````sh
 sudo apt update
 sudo apt install curl -y
@@ -1098,40 +1077,36 @@ curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 kubectl version --client
 ````
-
 ````sh
 sudo chmod +x kube.sh 
 bash kube.sh
 ````
 
-   2- Master nodeda /home/.kube klasörü altındaki "config" dosyasını bir yere kaydediyoruz.  ismini "secret-file.txt" yaptım.
-   Bu dosyayı Kubernetes kimlik bilgisi bölümünde kullanıcağız.
+2- On the master node, save the "config" file under the /home/.kube directory somewhere. I named it "secret-file.txt".
+We will use this file in the Kubernetes credentials section.
 
-   3- Jenkins'te Kubernetes'i yönetmek için Kubernetes eklentilerini indirip yüklemeniz gerekir. bunun için:
+3- In Jenkins, download and install the Kubernetes plugins to manage Kubernetes.
+To do this:
 
-   Jenkins'i Yönet > Eklentiler > Yüklenebilecek eklentiler  bölümüne gidip aşağıdaki eklentileri ekliyoruz:
+Go to Manage Jenkins > Manage Plugins > Available Plugins and add the following plugins:
 
-   Kubernetes Credential
+  - Kubernetes Credential
+  - Kubernetes Client API
+  - Kubernetes
+  - Kubernetes CLI
 
-   Kubernetes Client API
+4- Add Kubernetes credentials:
 
-   Kubernetes
+"Manage Jenkins" → “Manage Credentials” → Click on “Jenkins” global → “Add Credentials”.
 
-   Kubernetes CLI
-   
-   4- “Manage Jenkins” → “Manage Credentials” → Click on “Jenkins” global → “Add Credentials”.
+  - "Kind" = Secret file 
+  - "File" = select the secret-file.txt file.
+  - "ID" = k8s
+  - create
 
-   "Kind" = Secret file 
+5- Kubernetes manifest yaml files will be as follows:
 
-   "File" = secret-file.txt dosyasını seçiyoruz.
-
-   "ID" = k8s
-
-   create
-
-   5- Kubernetes için manifesto yaml dosyaları aşağıdaki gibi olacak:
-
->>>deployment.yml
+>>> deployment.yml
 ````sh
 apiVersion: apps/v1
 kind: Deployment
@@ -1174,22 +1149,19 @@ spec:
     app: netflix-app
 ````
 
-
-   6- "Netfilix" pipelinina kubernetes kümesinde deploy etmesi için aşağıdaki adımı ekliyoruz.
-
+6- Add the following step to the "Netfilix" pipeline to deploy it to the Kubernetes cluster.
 ````sh
-        stage('Deploy to kubernets'){
-            steps{
-                script{
-                    dir('Kubernetes') {
-                        withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
-                                sh 'kubectl apply -f deployment.yml'
-                                sh 'kubectl apply -f service.yml'
-                        }   
-                    }
-                }
+stage('Deploy to kubernets'){
+    steps{
+        script{
+            dir('Kubernetes') {
+                withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
+                        sh 'kubectl apply -f deployment.yml'
+                        sh 'kubectl apply -f service.yml'
+                }   
             }
         }
+    }
+}
 ````
-
- Bu aşama, Jenkins pipeline'ın bir parçası olarak Kubernetes cluster'ına kaynakları dağıtır. deployment.yml ve service.yml dosyalarının bulunduğu Kubernetes dizinine geçer, belirtilen cluster'a bağlanır ve bu dosyalarla belirtilen Kubernetes kaynaklarını uygular (oluşturur veya günceller). Bu işlem, uygulamanın Kubernetes ortamında çalışmasını sağlar.
+ This phase deploys resources to the Kubernetes cluster as part of the Jenkins pipeline. It traverses to the Kubernetes directory where the deployment.yml and service.yml files are located, connects to the specified cluster, and applies (creates or updates) the Kubernetes resources specified by these files. This process allows the application to run in the Kubernetes environment.
